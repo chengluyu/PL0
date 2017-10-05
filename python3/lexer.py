@@ -3,7 +3,7 @@ import re
 
 KEYWORDS = set(['const', 'var', 'procedure', 'call', 'if', 'then', 'else',
                 'while', 'do', 'begin', 'end', 'odd', 'read', 'write'])
-RE_SYMBOL = re.compile(r"[+\-*/=,.<>#();]|>=|<=|:=", re.MULTILINE)
+RE_SYMBOL = re.compile(r">=|<=|:=|[+\-*/=,.<>#();]", re.MULTILINE)
 RE_NUMBER = re.compile(r"\d+")
 RE_IDENT = re.compile(r"[A-Za-z_][0-9A-Za-z_]*", re.MULTILINE)
 RE_WHITESPACE = re.compile(r"\s+")
