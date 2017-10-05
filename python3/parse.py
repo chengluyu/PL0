@@ -159,14 +159,23 @@ class Parser:
             self.call_stmt()
         else:
             self.assign_stmt()
+    def read_single_var(self):
+        self.asm.read()
+        (_, ident) = self.lexer.expect('identifier')
+        symb = self.scope.resolve(ident)
+        if symb is None:
+            raise Exception('undeclared identifier')
+        if symb.kind != SymbolKind.VAR:
+            raise Exception('only variables can be assigned')
+        self.asm.read()
+        self.asm.comment('read to %s' % ident)
+        self.asm.store_var(self.scope.level - symb.level, symb.index)
     def read_stmt(self):
         self.lexer.expect('read')
         #self.lexer.expect('(')
-        self.expr()
-        self.asm.read()
+        self.read_single_var()
         while self.lexer.peep(','):
-            self.expr()
-            self.asm.read()
+            self.read_single_var()
         #self.lexer.expect(')')
     def write_stmt(self):
         self.lexer.expect('write')
