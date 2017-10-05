@@ -32,6 +32,7 @@ class Parser:
         self.scope = None
         self.asm = Assembler()
         self.call_refills = dict()
+        self.undeclared_calls = dict()
     def program(self):
         # this is the global scope
         self.scope = Scope(self.scope)
@@ -40,6 +41,8 @@ class Parser:
         self.lexer.expect('eos')
         # retreat the global scope
         self.scope = self.scope.enclosing_scope
+        if len(self.undeclared_calls) > 0:
+            raise Exception('undeclared procedure exists')
         return self.asm.code
     # the subprogram returns the entry address of this subprogram
     def subprogram(self, subprog_name, is_main=False):
@@ -95,9 +98,17 @@ class Parser:
         entry_addr = self.subprogram(proc_name)
         self.lexer.expect(';')
         proc_symb.entry = entry_addr
+        # refill calls inside the procedure
         for addr in self.call_refills[proc_name]:
             self.asm.refill_addr(addr, entry_addr)
         del self.call_refills[proc_name]
+        # refill calls before the procedure
+        if proc_name in self.undeclared_calls:
+            for (ins, caller_lvl) in self.undeclared_calls[proc_name]:
+                level_dist = caller_lvl - self.scope.level + 1
+                self.asm.comment('call %s' % proc_name)
+                self.asm.refill(ins, level_dist, entry_addr)
+            del self.undeclared_calls[proc_name]
         # destory the scope
         self.scope = self.scope.enclosing_scope
     def stmt_block(self):
@@ -137,7 +148,13 @@ class Parser:
         (_, ident) = self.lexer.expect('identifier')
         symb = self.scope.resolve(ident)
         if symb is None:
-            raise Exception('undeclared procedure "%s"' % ident)
+            # if the callee procedure is not found in symbol table
+            # we record it and assume it will be declared later
+            if ident not in self.undeclared_calls:
+                self.undeclared_calls[ident] = list()
+            info = (self.asm.call(), self.scope.level)
+            self.undeclared_calls[ident].append(info)
+            return
         if symb.kind != SymbolKind.PROC:
             raise Exception('only procedure can be called')
         self.asm.comment('call %s' % ident)

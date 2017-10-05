@@ -44,6 +44,9 @@ class Assembler:
         return len(self.code) - 1
     def next_addr(self):
         return len(self.code)
+    def refill(self, index, level, address):
+        (opcode, _, __, comment) = self.code[index]
+        self.code[index] = (opcode, level, address, comment)
     def refill_addr(self, index, address):
         (opcode, level, _, comment) = self.code[index]
         self.code[index] = (opcode, level, address, comment)
@@ -63,7 +66,7 @@ class Assembler:
     def store_var(self, level, address):
         self.emit(Opcode.STO, level, address)
     # CAL: call a procedure
-    def call(self, level, address):
+    def call(self, level=None, address=None):
         self.emit(Opcode.CAL, level, address)
         if address is None:
             return self.curr_addr()
