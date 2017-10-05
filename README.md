@@ -11,3 +11,16 @@ You can see the full grammar (written in BNF) of common PL/0 language at [Wikipe
 1. Procedures can be nested, which indicates that you can define a sub-procedure in a procedure. The inner procedures do have the access to symbols that defined in outer procedures.
 2. The parser should not generate abstract syntax trees, instead it should generate byte codes directly. 
 3. A virtual machine should be done in order to simulate the execution of byte codes.
+
+## Current Status
+
+The old C code is deprecated and the new plan is listed below:
+
+- [x] The Python 3 version.
+- [ ] Add more exemplary code for test.
+- [ ] Transcript the Python 3 code to C++.
+- [ ] Add breakpoint support (make debug easier).
+
+## License 
+
+MIT
