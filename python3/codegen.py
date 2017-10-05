@@ -65,6 +65,8 @@ class Assembler:
     # CAL: call a procedure
     def call(self, level, address):
         self.emit(Opcode.CAL, level, address)
+        if address is None:
+            return self.curr_addr()
     # JMP: unconditionally jump
     def jump(self, target=None):
         self.emit(Opcode.JMP, 0, target)

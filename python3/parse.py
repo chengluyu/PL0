@@ -31,16 +31,18 @@ class Parser:
         self.lexer = lexer
         self.scope = None
         self.asm = Assembler()
+        self.call_refills = dict()
     def program(self):
         # this is the global scope
         self.scope = Scope(self.scope)
-        self.subprogram(True)
+        self.subprogram('(main)', True)
         self.lexer.expect('.')
         self.lexer.expect('eos')
         # retreat the global scope
         self.scope = self.scope.enclosing_scope
         return self.asm.code
-    def subprogram(self, is_main=False):
+    # the subprogram returns the entry address of this subprogram
+    def subprogram(self, subprog_name, is_main=False):
         # main only
         if is_main:
             self.asm.comment('jump to main')
@@ -53,12 +55,14 @@ class Parser:
             self.decl_proc()
         # main only
         if is_main:
-            self.asm.comment('main')
             main_entry = self.asm.next_addr()
             self.asm.refill_addr(jump_main_entry, main_entry)
+        entry_addr = self.asm.next_addr()
+        self.asm.comment(subprog_name)
         self.asm.enter(self.scope.var_count)
         self.stmt()
         self.asm.leave()
+        return entry_addr
     def decl_single_var(self, index):
         (_, ident) = self.lexer.expect('identifier')
         self.scope.define(VariableSymbol(ident, self.scope.level, index))
@@ -82,14 +86,18 @@ class Parser:
     def decl_proc(self):
         self.lexer.expect('procedure')
         (_, proc_name) = self.lexer.expect('identifier')
-        self.scope.define(ProcedureSymbol(proc_name, self.scope.level, self.asm.next_addr()))
+        proc_symb = ProcedureSymbol(proc_name, self.scope.level)
+        self.scope.define(proc_symb)
+        self.call_refills[proc_name] = []
         self.lexer.expect(';')
         # create new scope for this procedure
         self.scope = Scope(self.scope)
-        # marked by the dragon!
-        self.asm.comment('PROCEDURE ' + proc_name)
-        self.subprogram()
+        entry_addr = self.subprogram(proc_name)
         self.lexer.expect(';')
+        proc_symb.entry = entry_addr
+        for addr in self.call_refills[proc_name]:
+            self.asm.refill_addr(addr, entry_addr)
+        del self.call_refills[proc_name]
         # destory the scope
         self.scope = self.scope.enclosing_scope
     def stmt_block(self):
@@ -132,7 +140,9 @@ class Parser:
             raise Exception('undeclared procedure "%s"' % ident)
         if symb.kind != SymbolKind.PROC:
             raise Exception('only procedure can be called')
-        self.asm.call(self.scope.level - symb.level, symb.entry)
+        refill = self.asm.call(self.scope.level - symb.level, symb.entry)
+        if refill is not None: # so we need to fill the address field later
+            self.call_refills[ident].append(refill)
     def stmt(self):
         if self.lexer.peep('read'):
             self.read_stmt()
