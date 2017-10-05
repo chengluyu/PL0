@@ -140,6 +140,7 @@ class Parser:
             raise Exception('undeclared procedure "%s"' % ident)
         if symb.kind != SymbolKind.PROC:
             raise Exception('only procedure can be called')
+        self.asm.comment('call %s' % ident)
         refill = self.asm.call(self.scope.level - symb.level, symb.entry)
         if refill is not None: # so we need to fill the address field later
             self.call_refills[ident].append(refill)
@@ -185,6 +186,7 @@ class Parser:
             raise Exception('only variables can be assigned')
         self.lexer.expect(':=')
         self.expr()
+        self.asm.comment('store to var %s' % ident)
         self.asm.store_var(self.scope.level - symb.level, symb.index)
     def cond(self):
         if self.lexer.match('odd'):
@@ -216,13 +218,16 @@ class Parser:
             if symb is None:
                 raise Exception('undeclared identifier')
             if symb.kind == SymbolKind.VAR:
+                self.asm.comment('load var %s' % ident)
                 self.asm.load_var(self.scope.level - symb.level, symb.index)
             elif symb.kind == SymbolKind.CONST:
+                self.asm.comment('load constant %s = %d' % (ident, symb.value))
                 self.asm.load_const(symb.value)
             else:
                 raise Exception('procedures cannot be referenced in expression')
         elif self.lexer.peep('number'):
             (_, num) = self.lexer.next()
+            self.asm.comment('load integer %d' % num)
             self.asm.load_const(num)
         elif self.lexer.match('('):
             self.expr()

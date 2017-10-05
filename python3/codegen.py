@@ -83,12 +83,16 @@ class Assembler:
     # helpers for OPR
     def operator(self, op):
         if op in OPS:
+            self.comment(str.lower(OPS[op].name))
             self.emit(Opcode.OPR, 0, OPS[op])
         else:
             raise ValueError('invalid operator to assemble')
     def read(self):
+        self.comment('read')
         self.emit(Opcode.OPR, 0, Opt.READ)
     def write(self):
+        self.comment('write')
         self.emit(Opcode.OPR, 0, Opt.WRITE)
     def leave(self):
+        self.comment('return')
         self.emit(Opcode.OPR, 0, Opt.RET)
