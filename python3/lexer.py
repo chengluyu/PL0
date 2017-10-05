@@ -77,11 +77,3 @@ class Lexer:
             raise Exception('expect %s instead of %s at line %d column %d' %
                             (token, self.peek, self.line, self.column))
         return result
-
-if __name__ == '__main__':
-    lexer = Lexer('./example/prime.txt')
-    while lexer.peek[0] != 'eos' and lexer.peek[0] != 'illegal':
-        print(lexer.peek)
-        lexer.advance()
-    print(lexer.peek)
-    

@@ -230,14 +230,3 @@ class Parser:
         else:
             raise Exception('expect an identifier, an integer or an expression instead of %s' % self.lexer.peek[0])
                 
-if __name__ == '__main__':
-    lexer = Lexer('./example/prime.txt')
-    parzer = Parser(lexer)
-    code = parzer.program()
-    for (i, (opcode, level, address, comment)) in enumerate(code):
-        s = '%d\t %s\t%d\t%d' % (i, opcode.name, level, address)
-        if isinstance(address, Opt):
-            s += '\t(%s)' % address.name
-        if comment is not None:
-            s += '\t# %s' % comment
-        print(s)

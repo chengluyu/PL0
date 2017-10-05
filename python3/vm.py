@@ -119,15 +119,7 @@ class VM:
         }
         # do iteration on instructions
         while program_counter < len(code):
-            # print('Execute instruction at %d' % program_counter)
+            print('Execute instruction at %d' % program_counter)
             (opcode, level, address, _) = code[program_counter]
             program_counter += 1
             cbs[opcode](level, address)
-
-if __name__ == '__main__':
-    lexer = Lexer('./example/prime.txt')
-    parzer = Parser(lexer)
-    code = parzer.program()
-    vm = VM()
-    vm.execute(code, 0)
-        
