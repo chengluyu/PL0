@@ -10,7 +10,7 @@ You can see the full grammar (written in BNF) of common PL/0 language at [Wikipe
 2. The parser should not generate abstract syntax trees, instead it should generate byte codes directly. 
 3. A virtual machine should be done in order to simulate the execution of byte codes.
 
-## Specs of Target Machine
+## Specification of Target Machine
 
 In this section, the target instruction set will be demonstrated. The target runtime environment is a stack-based machine. There are four register and a stack in the target machine.
 
@@ -47,6 +47,24 @@ The instruction consists of three parts: opcode, level, address. There are seven
 6. `JMP`: Unconditionally jump to the address given in address field. The level field is unused.
 7. `JPC`: If the value at top of evaluation is falsy (i.e. zero), jump to the address given in address field. The level field is unused.
 8. `OPR`: Do the operation decided by the address field.
+
+## Implementation Details
+
+### The Tokenizer
+
+The tokenizer are written from scratch. Tokens are represented by a pair.
+
+### The Parser and Symbol Table
+
+This implementation uses a LL(1) parser. Uses a nested symbol table to maintain symbols.
+
+### Code Generation
+
+Since the parser is required to generate byte codes directly. A helper class `Assembler` is introduced, by which the parser can generate instructions and refill instructions easily.
+
+### The Virtual Machine (The Simulator)
+
+The simulator does not adopt a single-stack design. Instead, the runtime stack is composed of many discrete stack frame.
 
 ## Current Status
 
