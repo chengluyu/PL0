@@ -34,6 +34,12 @@ OPS = {
     '>': Opt.GE, '>=': Opt.GEQ, 'odd': Opt.ODD
 }
 
+def prettify_instruction(ins):
+    s = '%s\t%d\t%d' % (ins[0].name, ins[1], ins[2])
+    if ins[3] is not None:
+        s += '\t# %s' % ins[3]
+    return s
+
 class Assembler:
     def __init__(self):
         self.code = list()
