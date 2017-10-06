@@ -8,6 +8,7 @@ RE_NUMBER = re.compile(r"\d+")
 RE_IDENT = re.compile(r"[A-Za-z_][0-9A-Za-z_]*", re.MULTILINE)
 RE_WHITESPACE = re.compile(r"\s+")
 
+
 class Lexer:
     def __init__(self, filepath):
         self.fd = open(filepath, 'r')
@@ -16,6 +17,7 @@ class Lexer:
         self.column = 0
         self.peek = None
         self.advance()
+
     def advance(self):
         # skip whitespaces
         result = RE_WHITESPACE.match(self.current_line, self.column)
@@ -60,17 +62,21 @@ class Lexer:
             return
         # illegal token
         self.peek = ('illegal', (self.line, self.column))
+
     def peep(self, token):
         return self.peek[0] == token
+
     def next(self):
         result = self.peek
         self.advance()
         return result
+
     def match(self, token):
         if self.peek[0] == token:
             result = self.peek
             self.advance()
             return result
+
     def expect(self, token):
         result = self.match(token)
         if not result:

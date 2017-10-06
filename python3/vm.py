@@ -15,6 +15,7 @@ BIFUNCTORS = {
     Opt.GEQ: (lambda x, y: 1 if x >= y else 0)
 }
 
+
 class StackFrame:
     def __init__(self, return_address, enclosing_frame, parent_frame=None):
         self.parent_frame = parent_frame
@@ -32,6 +33,7 @@ class StackFrame:
             dist -= 1
             frame = frame.parent_frame
         return frame
+
 
 class VM:
     def __init__(self, code, entry=0):
@@ -67,11 +69,11 @@ class VM:
         self.program_counter = entry
 
     def on_int(self, _, size):
-        assert size >= 3;
+        assert size >= 3
         self.top.allocate_locals(size - 3)
 
     def on_jmp(self, _, target):
-        assert target < len(self.code);
+        assert target < len(self.code)
         self.program_counter = target
 
     def on_jpc(self, _, target):

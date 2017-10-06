@@ -9,10 +9,10 @@ block = [ "const" ident "=" number {"," ident "=" number} ";"]
         [ "var" ident {"," ident} ";"]
         { "procedure" ident ";" block ";" } statement .
 
-statement = [ ident ":=" expression | "call" ident 
-              | "?" ident | "!" expression 
-              | "begin" statement {";" statement } "end" 
-              | "if" condition "then" statement 
+statement = [ ident ":=" expression | "call" ident
+              | "?" ident | "!" expression
+              | "begin" statement {";" statement } "end"
+              | "if" condition "then" statement
               | "while" condition "do" statement ].
 
 condition = "odd" expression |
@@ -26,6 +26,7 @@ factor = ident | number | "(" expression ")".
 """
 COMPARATOR = set(['=', '#', '<', '>', '<=', '>='])
 
+
 class Parser:
     def __init__(self, lexer):
         self.lexer = lexer
@@ -33,6 +34,7 @@ class Parser:
         self.asm = Assembler()
         self.call_refills = dict()
         self.undeclared_calls = dict()
+
     def program(self):
         # this is the global scope
         self.scope = Scope(self.scope)
@@ -44,6 +46,7 @@ class Parser:
         if len(self.undeclared_calls) > 0:
             raise Exception('undeclared procedure exists')
         return self.asm.code
+
     # the subprogram returns the entry address of this subprogram
     def subprogram(self, subprog_name, is_main=False):
         # main only
@@ -66,26 +69,31 @@ class Parser:
         self.stmt()
         self.asm.leave()
         return entry_addr
+
     def decl_single_var(self, index):
         (_, ident) = self.lexer.expect('identifier')
         self.scope.define(VariableSymbol(ident, self.scope.level, index))
+
     def decl_vars(self):
         self.lexer.expect('var')
         self.decl_single_var(self.scope.var_count)
         while self.lexer.match(','):
             self.decl_single_var(self.scope.var_count)
         self.lexer.expect(';')
+
     def decl_single_const(self):
         (_, ident) = self.lexer.expect('identifier')
         self.lexer.expect('=')
         (_, value) = self.lexer.expect('number')
         return ConstantSymbol(ident, value)
+
     def decl_consts(self):
         self.lexer.expect('const')
         self.scope.define(self.decl_single_const())
         while self.lexer.match(','):
             self.scope.define(self.decl_single_const())
         self.lexer.expect(';')
+
     def decl_proc(self):
         self.lexer.expect('procedure')
         (_, proc_name) = self.lexer.expect('identifier')
@@ -111,12 +119,14 @@ class Parser:
             del self.undeclared_calls[proc_name]
         # destory the scope
         self.scope = self.scope.enclosing_scope
+
     def stmt_block(self):
         self.lexer.expect('begin')
         self.stmt()
         while self.lexer.match(';'):
             self.stmt()
         self.lexer.expect('end')
+
     def if_stmt(self):
         self.lexer.expect('if')
         self.cond()
@@ -133,6 +143,7 @@ class Parser:
         else:
             cons_end = self.asm.next_addr()
             self.asm.refill_addr(jmp_altr, cons_end)
+
     def while_stmt(self):
         loop_begin = self.asm.next_addr()
         self.lexer.expect('while')
@@ -143,6 +154,7 @@ class Parser:
         self.asm.jump(loop_begin)
         loop_end = self.asm.next_addr()
         self.asm.refill_addr(cond_fail, loop_end)
+
     def call_stmt(self):
         self.lexer.expect('call')
         (_, ident) = self.lexer.expect('identifier')
@@ -159,8 +171,9 @@ class Parser:
             raise Exception('only procedure can be called')
         self.asm.comment('call %s' % ident)
         refill = self.asm.call(self.scope.level - symb.level, symb.entry)
-        if refill is not None: # so we need to fill the address field later
+        if refill is not None:  # so we need to fill the address field later
             self.call_refills[ident].append(refill)
+
     def stmt(self):
         if self.lexer.peep('read'):
             self.read_stmt()
@@ -176,6 +189,7 @@ class Parser:
             self.call_stmt()
         else:
             self.assign_stmt()
+
     def read_single_var(self):
         self.asm.read()
         (_, ident) = self.lexer.expect('identifier')
@@ -187,22 +201,25 @@ class Parser:
         self.asm.read()
         self.asm.comment('read to %s' % ident)
         self.asm.store_var(self.scope.level - symb.level, symb.index)
+
     def read_stmt(self):
         self.lexer.expect('read')
-        #self.lexer.expect('(')
+        # self.lexer.expect('(')
         self.read_single_var()
         while self.lexer.peep(','):
             self.read_single_var()
-        #self.lexer.expect(')')
+        # self.lexer.expect(')')
+
     def write_stmt(self):
         self.lexer.expect('write')
-        #self.lexer.expect('(')
+        # self.lexer.expect('(')
         self.expr()
         self.asm.write()
         while self.lexer.peep(','):
             self.expr()
             self.asm.write()
-        #self.lexer.expect(')')
+        # self.lexer.expect(')')
+
     def assign_stmt(self):
         (_, ident) = self.lexer.expect('identifier')
         symb = self.scope.resolve(ident)
@@ -214,6 +231,7 @@ class Parser:
         self.expr()
         self.asm.comment('store to var %s' % ident)
         self.asm.store_var(self.scope.level - symb.level, symb.index)
+
     def cond(self):
         if self.lexer.match('odd'):
             self.expr()
@@ -225,18 +243,21 @@ class Parser:
                 raise Exception('expect a comparator instead of %s' % op)
             self.expr()
             self.asm.operator(op)
+    
     def expr(self):
         self.term()
         while self.lexer.peep('*') or self.lexer.peep('/'):
             (op, _) = self.lexer.next()
             self.term()
             self.asm.operator(op)
+
     def term(self):
         self.factor()
         while self.lexer.peep('+') or self.lexer.peep('-'):
             (op, _) = self.lexer.next()
             self.factor()
             self.asm.operator(op)
+
     def factor(self):
         if self.lexer.peep('identifier'):
             (_, ident) = self.lexer.next()
@@ -250,7 +271,7 @@ class Parser:
                 self.asm.comment('load constant %s = %d' % (ident, symb.value))
                 self.asm.load_const(symb.value)
             else:
-                raise Exception('procedures cannot be referenced in expression')
+                raise Exception('procedures cannot be used in expression')
         elif self.lexer.peep('number'):
             (_, num) = self.lexer.next()
             self.asm.comment('load integer %d' % num)
@@ -259,5 +280,5 @@ class Parser:
             self.expr()
             self.lexer.expect(')')
         else:
-            raise Exception('expect an identifier, an integer or an expression instead of %s' % self.lexer.peek[0])
-                
+            raise Exception('expect an identifier, an integer or an' +
+                            'expression instead of %s' % self.lexer.peek[0])
