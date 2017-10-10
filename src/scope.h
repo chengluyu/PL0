@@ -34,6 +34,10 @@ public:
         return iter->second;
     }
 
+    inline scope *get_enclosing_scope() {
+        return enclosing_scope_;
+    }
+
     inline int get_level() const {
         return level_;
     }

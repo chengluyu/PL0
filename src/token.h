@@ -82,6 +82,10 @@ inline token token_with_string(token_type tk, std::string &&literal) {
     return std::make_pair(tk, std::make_optional(literal));
 }
 
+inline bool is_compare_operator(token_type tk) {
+    return static_cast<int>(EQ) <= static_cast<int>(tk) && static_cast<int>(tk) <= static_cast<int>(GEQ);
+}
+
 }
 
 #endif

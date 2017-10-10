@@ -20,6 +20,10 @@ public:
 
     void advance();
 
+    token_type peek() {
+        return peek_.first;
+    }
+
     bool peek(token_type tk) {
         return peek_.first == tk;
     }
