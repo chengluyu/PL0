@@ -11,33 +11,33 @@
 namespace pl0 {
 
 class lexer {
-	std::istream &input_stream_;
-	token peek_;
+    std::istream &input_stream_;
+    token peek_;
 public:
-	lexer(std::istream &input_stream) : input_stream_(input_stream) {
-		advance();
-	}
+    lexer(std::istream &input_stream) : input_stream_(input_stream) {
+        advance();
+    }
 
-	void advance();
+    void advance();
 
-	bool peek(token_type tk) {
-		return peek_.first == tk;
-	}
+    bool peek(token_type tk) {
+        return peek_.first == tk;
+    }
 
-	token next() {
-		token save = std::move(peek_);
-		advance();
-		return save;
-	}
+    token next() {
+        token save = std::move(peek_);
+        advance();
+        return save;
+    }
 
-	token expect(token_type tk) {
-		if (peek_.first == tk) return next();
-		throw general_error("expect ", *tk, " instead of ", *peek_.first);
-	}
+    token expect(token_type tk) {
+        if (peek_.first == tk) return next();
+        throw general_error("expect ", *tk, " instead of ", *peek_.first);
+    }
 
-	std::optional<token> match(token_type tk) {
-		return peek_.first == tk ? std::make_optional(peek_) : std::make_optional<token>();
-	}
+    std::optional<token> match(token_type tk) {
+        return peek_.first == tk ? std::make_optional(peek_) : std::make_optional<token>();
+    }
 };
 
 }
