@@ -35,10 +35,10 @@ void parser::procedure_decl() {
     std::string procname = lexer_.expect(token_type::IDENTIFIER).second.value();
     top_->define(new procedure(procname, top_->get_level(), 0));
     lexer_.expect(token_type::SEMICOLON);
-    top_ = new scope(top_);
+	enter_scope();
     subprogram();
     lexer_.expect(token_type::SEMICOLON);
-    top_ = top_->get_enclosing_scope();
+	leave_scope();
 }
 
 // statements
@@ -173,6 +173,18 @@ void parser::factor() {
     } else {
         throw general_error("expect an identifier, a number or a expression instead of ", *lexer_.peek());
     }
+}
+
+parser::parser(lexer & lexer) : lexer_(lexer), top_(nullptr) {
+
+}
+
+void parser::program() {
+	enter_scope();
+	subprogram();
+	lexer_.expect(token_type::PERIOD);
+	lexer_.expect(token_type::EOS);
+	leave_scope();
 }
 
 }

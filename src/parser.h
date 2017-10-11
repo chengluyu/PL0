@@ -10,6 +10,17 @@ class parser {
     lexer &lexer_;
     scope *top_;
 
+	// scope control
+	void enter_scope() {
+		top_ = new scope(top_);
+	}
+
+	void leave_scope() {
+		scope *inner = top_;
+		top_ = top_->get_enclosing_scope();
+		delete inner;
+	}
+
     void subprogram();
     // declarations
     void variable_decl();
