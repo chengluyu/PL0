@@ -8,7 +8,7 @@ namespace pl0 {
 class symbol {
     std::string name_;
 public:
-    symbol(std::string name) : name_(name) {}
+    symbol(const std::string &name) : name_(name) {}
 
     const std::string &get_name() const {
         return name_;
@@ -26,7 +26,7 @@ class variable : public symbol {
     int level_;
     int index_;
 public:
-    variable(std::string &&name, int level, int index)
+    variable(const std::string &name, int level, int index)
         : symbol(name), level_(level), index_(index) {}
 
     int get_level() const {
@@ -54,7 +54,7 @@ public:
 class constant : public symbol {
     int value_;
 public:
-    constant(std::string &&name, int value)
+    constant(const std::string &name, int value)
         : symbol(name), value_(value) {}
 
     int get_value() const {
@@ -79,7 +79,7 @@ class procedure : public symbol {
     int level_;
     int entry_address_;
 public:
-    procedure(std::string &&name, int level, int entry_address)
+    procedure(const std::string &name, int level, int entry_address)
         : symbol(name), level_(level), entry_address_(entry_address) {}
 
     int get_level() const {
