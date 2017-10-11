@@ -14,7 +14,7 @@ void parser::variable_decl() {
     lexer_.expect(token_type::VAR);
     do {
         std::string ident = lexer_.expect(token_type::IDENTIFIER).second.value();
-        top_.define(new variable(ident, top_.get_level(), top_.get_variable_count()));
+        top_->define(new variable(ident, top_->get_level(), top_->get_variable_count()));
     } while(lexer_.match(token_type::COMMA));
     lexer_.expect(token_type::SEMICOLON);
 }
@@ -25,7 +25,7 @@ void parser::constant_decl() {
         std::string ident = lexer_.expect(token_type::IDENTIFIER).second.value();
         lexer_.expect(token_type::EQ);
         std::string num = lexer_.expect(token_type::NUMBER).second.value();
-        top_.define(new variable(ident, std::stoi(num));
+        top_->define(new constant(ident, std::stoi(num)));
     } while(lexer_.match(token_type::COMMA));
     lexer_.expect(token_type::SEMICOLON);
 }
@@ -33,7 +33,7 @@ void parser::constant_decl() {
 void parser::procedure_decl() {
     lexer_.expect(token_type::PROCEDURE);
     std::string procname = lexer_.expect(token_type::IDENTIFIER).second.value();
-    top_.define(new procedure(procname, top_.level, 0));
+    top_->define(new procedure(procname, top_->get_level(), 0));
     lexer_.expect(token_type::SEMICOLON);
     top_ = new scope(top_);
     subprogram();
@@ -68,7 +68,7 @@ void parser::call_statement() {
     lexer_.expect(token_type::CALL);
     std::string callee = lexer_.expect(token_type::IDENTIFIER).second.value();
     [[maybe_unused]]
-    symbol *symb = top_.resolve(callee);
+    symbol *symb = top_->resolve(callee);
 }
 
 void parser::statement() {
@@ -152,7 +152,7 @@ void parser::term() {
 void parser::factor() {
     if (lexer_.peek(token_type::IDENTIFIER)) {
         std::string ident = lexer_.next().second.value();
-        symbol *symb = top_.resolve(ident);
+        symbol *symb = top_->resolve(ident);
         if (symb == nullptr) {
             throw general_error("undeclared identifier \"", ident, '"');
         } else if (symb->is_variable()) {
@@ -169,7 +169,7 @@ void parser::factor() {
         std::string num = lexer_.next().second.value();
     } else if (lexer_.match(token_type::LPAREN)) {
         expression();
-        lexer_.expect(token_type::RPAREN)
+		lexer_.expect(token_type::RPAREN);
     } else {
         throw general_error("expect an identifier, a number or a expression instead of ", *lexer_.peek());
     }
