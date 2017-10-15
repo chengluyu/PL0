@@ -10,26 +10,26 @@ namespace pl0 {
 
 #define IGNORE_TOKEN(name, string)
 
-#define TOKEN_LIST(T, K)\
+#define TOKEN_LIST(T, O, K)\
     /* End of source indicator */ \
     T(EOS, "end of source") \
     T(NUMBER, "number") \
     T(IDENTIFIER, "identifier") \
     /* Unary operator */ \
-	T(ODD, "odd") \
+	O(ODD, "odd") \
     /* Binary operators */ \
-    T(ADD, "+") \
-    T(SUB, "-") \
-    T(MUL, "*") \
-    T(DIV, "/") \
+    O(ADD, "+") \
+    O(SUB, "-") \
+    O(MUL, "*") \
+    O(DIV, "/") \
     T(ASSIGN, ":=") \
     /* Compare operators */ \
-    T(EQ, "=") \
-    T(NEQ, "#") \
-    T(LE, "<") \
-    T(LEQ, "<=") \
-    T(GE, ">") \
-    T(GEQ, ">=") \
+    O(EQ, "=") \
+    O(NEQ, "#") \
+    O(LE, "<") \
+    O(LEQ, "<=") \
+    O(GE, ">") \
+    O(GEQ, ">=") \
     /* Punctuators */ \
     T(LPAREN, "(") \
     T(RPAREN, ")") \
@@ -54,19 +54,19 @@ namespace pl0 {
 
 #define T(name, string) name,
 enum class token_type : int {
-    TOKEN_LIST(T, T)
+    TOKEN_LIST(T, T, T)
 };
 #undef T
 
 #define T(name, string) string,
 const char* const token_string[] = {
-    TOKEN_LIST(T, T)
+    TOKEN_LIST(T, T, T)
 };
 #undef T
 
 #define K(name, string) { string, token_type::name },
 const std::unordered_map<std::string, token_type> keyword_map = {
-    TOKEN_LIST(IGNORE_TOKEN, K)
+    TOKEN_LIST(IGNORE_TOKEN, IGNORE_TOKEN, K)
 };
 #undef K
 

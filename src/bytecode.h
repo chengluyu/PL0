@@ -4,6 +4,8 @@
 #include <tuple>
 #include <vector>
 
+#include "token.h"
+
 namespace pl0 {
 
 enum class opcode : int {
@@ -20,6 +22,12 @@ enum class opt : int {
 inline constexpr int operator* (opt x) {
 	return static_cast<int>(x);
 }
+
+#define OPERATOR(name, string) { token_type::name, opt::name },
+const std::unordered_map<token_type, opt> token2opt = {
+	TOKEN_LIST(IGNORE_TOKEN, OPERATOR, IGNORE_TOKEN)
+};
+#undef OPERATOR
 
 typedef std::tuple<opcode, int, int> instruction;
 
