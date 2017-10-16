@@ -2,8 +2,6 @@
 #define PL_ZERO_LEXER_H
 
 #include <istream>
-#include <sstream>
-#include <stdexcept>
 
 #include "token.h"
 #include "util.h"
