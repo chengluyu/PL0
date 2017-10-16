@@ -4,29 +4,33 @@
 
 namespace pl0 {
 
-assembler::backpatcher::backpatcher(bytecode &code, std::size_t at)
-	: code_(code), at_(at) {}
+assembler::backpatcher::backpatcher(assembler &asmblr)
+	: asm_(asmblr), at_(asmblr.get_last_address()) {}
 
 void assembler::backpatcher::set_level(int level) {
 	opcode op;
 	int address;
-	std::tie(op, std::ignore, address) = code_[at_];
-	code_[at_] = std::make_tuple(op, level, address);
+	std::tie(op, std::ignore, address) = asm_.code_[at_];
+	asm_.code_[at_] = std::make_tuple(op, level, address);
 }
 
 void assembler::backpatcher::set_address(int address) {
 	opcode op;
 	int level;
-	std::tie(op, level, std::ignore) = code_[at_];
-	code_[at_] = std::make_tuple(op, level, address);
-}
-
-void assembler::backpatcher::mark_address() {
-    set_address(static_cast<int>(code_.size()));
+	std::tie(op, level, std::ignore) = asm_.code_[at_];
+    asm_.code_[at_] = std::make_tuple(op, level, address);
 }
 
 void assembler::emit(opcode op, int level, int address) {
 	code_.push_back({ op, level, address });
+}
+
+int assembler::get_next_address() {
+    return static_cast<int>(code_.size());
+}
+
+int assembler::get_last_address() {
+    return static_cast<int>(code_.size() - 1);
 }
 
 void assembler::load(int value) {
@@ -47,7 +51,7 @@ void assembler::call(int distance, int entry) {
 
 assembler::backpatcher assembler::call() {
 	emit(opcode::CAL, IGNORE, IGNORE);
-	return backpatcher{ code_, code_.size() - 1 };
+	return backpatcher{ *this };
 }
 
 void assembler::branch(int target) {
@@ -56,7 +60,7 @@ void assembler::branch(int target) {
 
 assembler::backpatcher assembler::branch() {
 	emit(opcode::JMP, IGNORE, IGNORE);
-	return backpatcher{ code_, code_.size() - 1 };
+	return backpatcher{ *this };
 }
 
 void assembler::branch_if_false(int target) {
@@ -65,7 +69,7 @@ void assembler::branch_if_false(int target) {
 
 assembler::backpatcher assembler::branch_if_false() {
 	emit(opcode::JPC, IGNORE, IGNORE);
-	return backpatcher{ code_, code_.size() - 1 };
+	return backpatcher{ *this };
 }
 
 void assembler::enter(int scope_var_count) {
