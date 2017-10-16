@@ -1,6 +1,8 @@
 #ifndef PL_ZERO_UTIL_H
 #define PL_ZERO_UTIL_H
 
+#include <sstream>
+
 namespace pl0 {
 
 #ifdef _MSC_VER
