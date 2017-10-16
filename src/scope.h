@@ -24,6 +24,9 @@ public:
         if (!result.second) {
             throw general_error("duplicated symbol \"", sym->get_name(), '"');
         }
+        if (sym->is_variable()) {
+            variable_count_++;
+        }
     }
 
     symbol *resolve(const std::string &name) {
