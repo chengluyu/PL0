@@ -59,7 +59,7 @@ void lexer::advance() {
             input_stream_.ignore();
             break;
         }
-        throw lexical_error("expect '=' after ':'");
+        throw general_error("expect '=' after ':'");
     case '(': peek_ = token_only(token_type::LPAREN); break;
     case ')': peek_ = token_only(token_type::RPAREN); break;
     case ';': peek_ = token_only(token_type::SEMICOLON); break;
@@ -85,7 +85,7 @@ void lexer::advance() {
         }
         break;
     default:
-        throw lexical_error("unrecognized character: '", static_cast<char>(copy), '\'');
+        throw general_error("unrecognized character: '", static_cast<char>(copy), '\'');
     }
 }
 

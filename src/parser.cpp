@@ -20,7 +20,7 @@ void parser::variable_decl() {
 }
 
 void parser::constant_decl() {
-    lexer_.expect(token_type::VAR);
+    lexer_.expect(token_type::CONST);
     do {
         std::string ident = lexer_.expect(token_type::IDENTIFIER).second.value();
         lexer_.expect(token_type::EQ);
@@ -105,7 +105,7 @@ void parser::read_statement() {
 }
 
 void parser::write_statement() {
-    lexer_.expect(token_type::READ);
+    lexer_.expect(token_type::WRITE);
     do {
         expression();
     } while (lexer_.match(token_type::COMMA));

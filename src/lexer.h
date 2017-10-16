@@ -40,7 +40,7 @@ public:
     }
 
     std::optional<token> match(token_type tk) {
-        return peek_.first == tk ? std::make_optional(peek_) : std::make_optional<token>();
+        return peek_.first == tk ? std::make_optional(next()) : std::nullopt;
     }
 };
 
