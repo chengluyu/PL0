@@ -1,6 +1,7 @@
 #include <cassert>
 #include <functional>
 #include <iostream>
+#include <type_traits>
 #include <unordered_map>
 
 #include "vm.h"
@@ -29,8 +30,12 @@ void pl0::execute(const bytecode & code, int entry_addr) {
 		return fp;
 	};
 	
-	auto push = [&](auto value) {
-		*++sp = reinterpret_cast<int>(value);
+	auto push = [&](auto value) -> void {
+		if constexpr (std::is_pointer_v<decltype(value)>) {
+			*++sp = reinterpret_cast<int>(value);
+		} else {
+			*++sp = value;
+		}
 	};
 
 	auto pop = [&]() -> int {
@@ -47,7 +52,7 @@ void pl0::execute(const bytecode & code, int entry_addr) {
 		{ opt::GE, std::greater<int>() },
 		{ opt::GEQ, std::greater_equal<int>() },
 		{ opt::EQ, std::equal_to<int>() },
-		{ opt::NEQ, std::not_equal_to<int>() },
+		{ opt::NEQ, std::not_equal_to<int>() }
 	};
 
 	while (pc < code.size()) {
