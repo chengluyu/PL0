@@ -3,12 +3,14 @@
 
 #include "lexer.h"
 #include "scope.h"
+#include "assembler.h"
 
 namespace pl0 {
 
 class parser {
     lexer &lexer_;
     scope *top_;
+	assembler asm_;
 
 	// scope control
 	void enter_scope() {
@@ -36,6 +38,7 @@ class parser {
     void write_statement();
     void assign_statement();
     // expressions
+	variable *lvalue();
     void condition();
     void expression();
     void term();
