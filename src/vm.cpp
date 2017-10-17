@@ -9,10 +9,10 @@
 const int STACK_SIZE = 1024;
 
 enum offset {
-    return_address = 0,
-    enclosing_frame = 1,
-    declaration_frame = 2,
-    local = 3
+    /* offset to return address */          return_address,
+    /* base pointer of enclosing frame */   enclosing_frame,
+    /* base pointer of declaration frame */ declaration_frame,
+    /* offset to local variables */         local
 };
 
 void pl0::execute(const bytecode & code, int entry_addr) {
