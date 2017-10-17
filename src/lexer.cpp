@@ -75,7 +75,6 @@ void lexer::advance() {
             peek_ = token_only(token_type::LE);
         }
         break;
-    case '<=':  break;
     case '>':
         if (input_stream_.peek() == '=') {
             peek_ = token_only(token_type::GEQ);
