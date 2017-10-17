@@ -20,14 +20,6 @@ void pl0::execute(const bytecode & code, int entry_addr) {
     int *stack = new int[STACK_SIZE];
     int bp = 0;
     int sp = bp;
-    
-    auto push = [&](int value) {
-        stack[++sp] = value;
-    };
-
-    auto pop = [&]() -> int {
-        return stack[sp--];
-    };
 
     const std::unordered_map<opt, std::function<int(int, int)>> bifunctors = {
         { opt::ADD, std::plus<int>() },
@@ -63,13 +55,13 @@ void pl0::execute(const bytecode & code, int entry_addr) {
 
         switch (opc) {
         case opcode::LIT:
-            push(address);
+            stack[++sp] = address;
             break;
         case opcode::LOD:
-            push(stack[resolve() + offset::local + address]);
+            stack[++sp] = stack[resolve() + offset::local + address];
             break;
         case opcode::STO:
-            stack[resolve() + offset::local + address] = pop();
+            stack[resolve() + offset::local + address] = stack[sp--];
             break;
         case opcode::CAL:
             // save context
@@ -86,26 +78,26 @@ void pl0::execute(const bytecode & code, int entry_addr) {
             pc = address;
             break;
         case opcode::JPC:
-            if (!pop()) pc = address;
+            if (!stack[sp--]) pc = address;
             break;
         case opcode::OPR:
             if (address == *opt::ODD) {
-                push(pop() % 2);
+                stack[++sp] = stack[sp--] % 2;
             } else if (address == *opt::READ) {
                 int tmp;
                 std::cin >> tmp;
-                push(tmp);
+                stack[++sp] = tmp;
             } else if (address == *opt::WRITE) {
-                std::cout << pop() << '\n';
+                std::cout << stack[sp--] << '\n';
             } else if (address == *opt::RET) {
                 // restore context
                 pc = stack[bp];
                 sp = bp;
                 bp = stack[bp + 1];
             } else {
-                int rhs = pop(), lhs = pop();
+                int rhs = stack[sp--], lhs = stack[sp--];
                 auto op = bifunctors.find(opt(address))->second;
-                push(op(lhs, rhs));
+                stack[++sp] = op(lhs, rhs);
             }
             break;
         }
