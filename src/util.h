@@ -8,15 +8,15 @@ namespace pl0 {
 #if defined(_MSC_VER) || defined(__GNUC__)
 namespace polyfill {
 
+template <typename T>
+void fold_write_stream(std::ostringstream &oss, T value) {
+    oss << value;
+}
+
 template <typename T, typename... Args>
 void fold_write_stream(std::ostringstream &oss, T value, Args... args) {
     oss << value;
     fold_write_stream(oss, args...);
-}
-
-template <typename T>
-void fold_write_stream(std::ostringstream &oss, T value) {
-    oss << value;
 }
 
 }
