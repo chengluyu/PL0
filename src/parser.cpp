@@ -2,13 +2,15 @@
 
 namespace pl0 {
 
-void parser::subprogram() {
+int parser::subprogram() {
     while (lexer_.peek(token_type::CONST)) constant_decl();
     while (lexer_.peek(token_type::VAR)) variable_decl();
     while (lexer_.peek(token_type::PROCEDURE)) procedure_decl();
-	asm_.enter(top_->get_variable_count());
+    int proc_begin = asm_.get_next_address();
+	asm_.enter(top_->get_variable_count() + 3);
     statement();
 	asm_.leave();
+    return proc_begin;
 }
 
 // declarations
@@ -35,10 +37,11 @@ void parser::constant_decl() {
 void parser::procedure_decl() {
     lexer_.expect(token_type::PROCEDURE);
     std::string procname = lexer_.expect(token_type::IDENTIFIER).second.value();
-    top_->define(new procedure(procname, top_->get_level(), 0));
+    procedure *proc = new procedure(procname, top_->get_level());
+    top_->define(proc);
     lexer_.expect(token_type::SEMICOLON);
 	enter_scope();
-    subprogram();
+    proc->set_entry_address(subprogram());
     lexer_.expect(token_type::SEMICOLON);
 	leave_scope();
 }
@@ -216,8 +219,9 @@ parser::parser(lexer & lexer) : lexer_(lexer), top_(nullptr) {
 }
 
 bytecode parser::program() {
+    auto jump_to_main = asm_.branch();
 	enter_scope();
-	subprogram();
+	jump_to_main.set_address(subprogram());
 	lexer_.expect(token_type::PERIOD);
 	lexer_.expect(token_type::EOS);
 	leave_scope();

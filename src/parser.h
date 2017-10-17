@@ -23,7 +23,7 @@ class parser {
 		delete inner;
 	}
 
-    void subprogram();
+    int subprogram();
     // declarations
     void variable_decl();
     void constant_decl();
