@@ -14,11 +14,17 @@ public:
         return name_;
     }
 
-    virtual bool is_variable() const = 0;
+    virtual bool is_variable() const {
+        return false;
+    }
 
-    virtual bool is_constant() const = 0;
+    virtual bool is_constant() const {
+        return false;
+    }
 
-    virtual bool is_procedure() const = 0;
+    virtual bool is_procedure() const {
+        return false;
+    }
 };
 
 
@@ -37,17 +43,10 @@ public:
         return index_;
     }
 
-    virtual bool is_variable() const final {
+    virtual bool is_variable() const {
         return true;
     }
 
-    virtual bool is_constant() const final {
-        return false;
-    }
-
-    virtual bool is_procedure() const final {
-        return false;
-    }
 };
 
 
@@ -61,16 +60,8 @@ public:
         return value_;
     }
 
-    virtual bool is_variable() const final {
-        return false;
-    }
-
-    virtual bool is_constant() const final {
+    virtual bool is_constant() const {
         return true;
-    }
-
-    virtual bool is_procedure() const final {
-        return false;
     }
 };
 
@@ -94,15 +85,7 @@ public:
         return entry_address_;
     }
 
-    virtual bool is_variable() const final {
-        return false;
-    }
-
-    virtual bool is_constant() const final {
-        return false;
-    }
-
-    virtual bool is_procedure() const final {
+    virtual bool is_procedure() const {
         return true;
     }
 };
