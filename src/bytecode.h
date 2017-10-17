@@ -8,9 +8,24 @@
 
 namespace pl0 {
 
+#define OPCODE_LIST(T) \
+    T(LIT) T(LOD) T(STO) T(CAL) T(INT) T(JMP) T(JPC) T(OPR)
+
+#define T(x) x,
 enum class opcode : int {
-	LIT, LOD, STO, CAL, INT, JMP, JPC, OPR
+	OPCODE_LIST(T)
 };
+#undef T
+
+#define T(name) #name,
+const char* const opcode_name[] = {
+    OPCODE_LIST(T)
+};
+#undef T
+
+inline const char* const operator* (opcode opc) {
+    return opcode_name[static_cast<int>(opc)];
+}
 
 enum class opt : int {
 	RET = 0,
