@@ -55,7 +55,8 @@ void pl0::execute(const bytecode & code, int entry_addr) {
 		{ opt::NEQ, std::not_equal_to<int>() }
 	};
 
-	while (pc < code.size()) {
+    int codelen = static_cast<int>(code.size());
+	while (pc < codelen) {
 		const instruction & ins = code[pc];
 		pc++;
 		switch (std::get<0>(ins)) {
