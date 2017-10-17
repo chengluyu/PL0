@@ -19,16 +19,7 @@ void pl0::execute(const bytecode & code, int entry_addr) {
 	int pc = 0;
 	int *stack = new int[STACK_SIZE];
 	int *bp = stack;
-	int *sp = bp + offset::declaration_frame;
-
-	auto resolve = [&](int dist) -> int* {
-		int *fp = bp;
-		while (dist > 0) {
-			fp = reinterpret_cast<int*>(fp[offset::declaration_frame]);
-			dist--;
-		}
-		return fp;
-	};
+	int *sp = bp;
 	
 	auto push = [&](auto value) -> void {
 		if constexpr (std::is_pointer_v<decltype(value)>) {
@@ -56,51 +47,69 @@ void pl0::execute(const bytecode & code, int entry_addr) {
 	};
 
     int codelen = static_cast<int>(code.size());
+    bp[offset::return_address] = codelen;
+
 	while (pc < codelen) {
-		const instruction & ins = code[pc];
+        opcode opc;
+        int level, address;
+        std::tie(opc, level, address) = code[pc];
 		pc++;
-		switch (std::get<0>(ins)) {
+
+        /* get bp of the frame whose distance from current frame is given */
+        auto resolve = [&]() -> int* {
+            int *fp = bp, dist = level;
+            while (dist > 0) {
+                fp = reinterpret_cast<int*>(fp[offset::declaration_frame]);
+                dist--;
+            }
+            return fp;
+        };
+
+		switch (opc) {
 		case opcode::LIT:
-			push(std::get<2>(ins));
+			push(address);
 			break;
 		case opcode::LOD:
-			push(resolve(std::get<1>(ins))[offset::local + std::get<2>(ins)]);
+			push(resolve()[offset::local + address]);
 			break;
 		case opcode::STO:
-			resolve(std::get<1>(ins))[offset::local + std::get<2>(ins)] = pop();
+			resolve()[offset::local + address] = pop();
 			break;
 		case opcode::CAL:
-			push(pc);
-			push(bp);
-			push(resolve(std::get<1>(ins)));
-			bp = sp - 3;
-			pc = std::get<2>(ins);
+            // save context
+            sp[0] = pc;
+            sp[1] = reinterpret_cast<int>(bp);
+            sp[2] = reinterpret_cast<int>(resolve());
+            bp = sp;
+			pc = address;
 			break;
 		case opcode::INT:
-			sp += std::get<2>(ins);
+			sp += address;
 			break;
 		case opcode::JMP:
-			pc = std::get<2>(ins);
+			pc = address;
 			break;
 		case opcode::JPC:
-			if (pop()) pc = std::get<2>(ins);
+			if (!pop()) pc = address;
 			break;
 		case opcode::OPR:
-			if (std::get<2>(ins) == *opt::ODD) {
+			if (address == *opt::ODD) {
 				push(pop() % 2);
-			} else if (std::get<2>(ins) == *opt::READ) {
+			} else if (address == *opt::READ) {
 				int tmp;
 				std::cin >> tmp;
 				push(tmp);
-			} else if (std::get<2>(ins) == *opt::WRITE) {
+			} else if (address == *opt::WRITE) {
 				std::cout << pop() << '\n';
-			} else if (std::get<2>(ins) == *opt::RET) {
-				sp = bp + offset::enclosing_frame;
-				bp = reinterpret_cast<int*>(pop());
-				pc = pop();
+			} else if (address == *opt::RET) {
+                // restore context
+                pc = bp[0];
+                sp = bp;
+                bp = reinterpret_cast<int*>(bp[1]);
 			} else {
 				int rhs = pop(), lhs = pop();
-				bifunctors.find(opt(std::get<2>(ins)))->second(lhs, rhs);
+				auto op = bifunctors.find(opt(address))->second;
+                push(op(lhs, rhs));
 			}
 			break;
 		}
