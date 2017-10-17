@@ -22,28 +22,33 @@ void print_help() {
         ;
 }
 
+void print_bytecode(const pl0::bytecode &code) {
+    for (size_t i = 0; i < code.size(); i++) {
+        std::cout
+            << i << '\t'
+            << *(std::get<0>(code[i])) << '\t'
+            << std::get<1>(code[i]) << '\t'
+            << std::get<2>(code[i]) << '\n';
+    }
+}
+
 int main(int argc, const char* const argv[]) {
-#ifdef USE_ARGV
     if (argc < 2) {
         std::cout << "Usage: pl0 [source code]" << std::endl;
         return 0;
     }
-    const char * const src = argv[1];
-#else
-    const char * const src = "";
-#endif
-    std::ifstream fin(src);
-    pl0::lexer lex(fin);
-    pl0::parser parser(lex);
-    pl0::bytecode code = parser.program();
-    for (size_t i = 0; i < code.size(); i++) {
-        std::cout
-            << i << '\t'
-            << *(std::get<0>(code[i])) << ' '
-            << std::get<1>(code[i]) << '\t'
-            << std::get<2>(code[i]) << '\n';
+    try {
+        std::ifstream fin(argv[1]);
+        if (fin.fail()) {
+            std::cerr << "Failed to open file: \"" << argv[1] << "\"\n";
+            return 1;
+        }
+        pl0::lexer lex(fin);
+        pl0::parser parser(lex);
+        pl0::bytecode code = parser.program();
+        pl0::execute(code);
+    } catch (pl0::general_error error) {
+        std::cout << error.what() << std::endl;
     }
-    pl0::execute(code);
-    std::cin.get();
     return 0;
 }
