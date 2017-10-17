@@ -5,7 +5,7 @@
 
 namespace pl0 {
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__GNUC__)
 namespace polyfill {
 
 template <typename T, typename... Args>
@@ -28,7 +28,7 @@ public:
     template <typename... Args>
     general_error(Args... args) {
         std::ostringstream oss;
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__GNUC__)
         // Visual Studio 2017 does not support fold expression now.
         // We need to make a polyfill.
         polyfill::fold_write_stream(oss, args...);
