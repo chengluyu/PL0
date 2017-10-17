@@ -18,19 +18,15 @@ enum offset {
 void pl0::execute(const bytecode & code, int entry_addr) {
     int pc = 0;
     int *stack = new int[STACK_SIZE];
-    int *bp = stack;
-    int *sp = bp;
+    int bp = 0;
+    int sp = bp;
     
-    auto push = [&](auto value) -> void {
-        if constexpr (std::is_pointer_v<decltype(value)>) {
-            *++sp = reinterpret_cast<int>(value);
-        } else {
-            *++sp = value;
-        }
+    auto push = [&](int value) {
+        stack[++sp] = value;
     };
 
     auto pop = [&]() -> int {
-        return *sp--;
+        return stack[sp--];
     };
 
     const std::unordered_map<opt, std::function<int(int, int)>> bifunctors = {
@@ -47,7 +43,7 @@ void pl0::execute(const bytecode & code, int entry_addr) {
     };
 
     int codelen = static_cast<int>(code.size());
-    bp[offset::return_address] = codelen;
+    stack[bp + offset::return_address] = codelen;
 
     while (pc < codelen) {
         opcode opc;
@@ -56,10 +52,10 @@ void pl0::execute(const bytecode & code, int entry_addr) {
         pc++;
 
         /* get bp of the frame whose distance from current frame is given */
-        auto resolve = [&]() -> int* {
-            int *fp = bp, dist = level;
+        auto resolve = [&]() -> int {
+            int fp = bp, dist = level;
             while (dist > 0) {
-                fp = reinterpret_cast<int*>(fp[offset::declaration_frame]);
+                fp = stack[fp + offset::declaration_frame];
                 dist--;
             }
             return fp;
@@ -70,16 +66,16 @@ void pl0::execute(const bytecode & code, int entry_addr) {
             push(address);
             break;
         case opcode::LOD:
-            push(resolve()[offset::local + address]);
+            push(stack[resolve() + offset::local + address]);
             break;
         case opcode::STO:
-            resolve()[offset::local + address] = pop();
+            stack[resolve() + offset::local + address] = pop();
             break;
         case opcode::CAL:
             // save context
-            sp[0] = pc;
-            sp[1] = reinterpret_cast<int>(bp);
-            sp[2] = reinterpret_cast<int>(resolve());
+            stack[sp + offset::return_address] = pc;
+            stack[sp + offset::enclosing_frame] = bp;
+            stack[sp + offset::declaration_frame] = resolve();
             bp = sp;
             pc = address;
             break;
@@ -103,9 +99,9 @@ void pl0::execute(const bytecode & code, int entry_addr) {
                 std::cout << pop() << '\n';
             } else if (address == *opt::RET) {
                 // restore context
-                pc = bp[0];
+                pc = stack[bp];
                 sp = bp;
-                bp = reinterpret_cast<int*>(bp[1]);
+                bp = stack[bp + 1];
             } else {
                 int rhs = pop(), lhs = pop();
                 auto op = bifunctors.find(opt(address))->second;
