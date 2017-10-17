@@ -16,7 +16,7 @@ namespace pl0 {
     T(NUMBER, "number") \
     T(IDENTIFIER, "identifier") \
     /* Unary operator */ \
-	O(ODD, "odd") \
+    O(ODD, "odd") \
     /* Binary operators */ \
     O(ADD, "+") \
     O(SUB, "-") \
@@ -86,7 +86,7 @@ inline token token_with_string(token_type tk, std::string &&literal) {
 
 inline bool is_compare_operator(token_type tk) {
     return static_cast<int>(token_type::EQ) <= static_cast<int>(tk) &&
-		   static_cast<int>(tk) <= static_cast<int>(token_type::GEQ);
+           static_cast<int>(tk) <= static_cast<int>(token_type::GEQ);
 }
 
 }

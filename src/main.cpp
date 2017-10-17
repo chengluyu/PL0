@@ -24,18 +24,18 @@ void print_help() {
 
 int main(int argc, const char* const argv[]) {
 #ifdef USE_ARGV
-	if (argc < 2) {
+    if (argc < 2) {
         std::cout << "Usage: pl0 [source code]" << std::endl;
-		return 0;
-	}
+        return 0;
+    }
     const char * const src = argv[1];
 #else
     const char * const src = "";
 #endif
-	std::ifstream fin(src);
-	pl0::lexer lex(fin);
-	pl0::parser parser(lex);
-	pl0::bytecode code = parser.program();
+    std::ifstream fin(src);
+    pl0::lexer lex(fin);
+    pl0::parser parser(lex);
+    pl0::bytecode code = parser.program();
     for (size_t i = 0; i < code.size(); i++) {
         std::cout
             << i << '\t'
@@ -45,5 +45,5 @@ int main(int argc, const char* const argv[]) {
     }
     pl0::execute(code);
     std::cin.get();
-	return 0;
+    return 0;
 }

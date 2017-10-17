@@ -7,9 +7,9 @@ int parser::subprogram() {
     while (lexer_.peek(token_type::VAR)) variable_decl();
     while (lexer_.peek(token_type::PROCEDURE)) procedure_decl();
     int proc_begin = asm_.get_next_address();
-	asm_.enter(top_->get_variable_count() + 3);
+    asm_.enter(top_->get_variable_count() + 3);
     statement();
-	asm_.leave();
+    asm_.leave();
     return proc_begin;
 }
 
@@ -40,10 +40,10 @@ void parser::procedure_decl() {
     procedure *proc = new procedure(procname, top_->get_level());
     top_->define(proc);
     lexer_.expect(token_type::SEMICOLON);
-	enter_scope();
+    enter_scope();
     proc->set_entry_address(subprogram());
     lexer_.expect(token_type::SEMICOLON);
-	leave_scope();
+    leave_scope();
 }
 
 // statements
@@ -79,17 +79,17 @@ void parser::call_statement() {
     lexer_.expect(token_type::CALL);
     std::string callee = lexer_.expect(token_type::IDENTIFIER).second.value();
     symbol *symb = top_->resolve(callee);
-	if (symb == nullptr) {
+    if (symb == nullptr) {
         // This procedure has not been declared yet,
         // but it may be declared later. We will cope
         // with this situation in the future version.
         throw general_error("undeclared procedure \"", callee, '"');
-	} else if (symb->is_procedure()) {
-		procedure *proc = dynamic_cast<procedure*>(symb);
-		asm_.call(top_->get_level() - proc->get_level(), proc->get_entry_address());
-	} else {
-		throw general_error("cannot call non-procedure \"", callee, '"');
-	}
+    } else if (symb->is_procedure()) {
+        procedure *proc = dynamic_cast<procedure*>(symb);
+        asm_.call(top_->get_level() - proc->get_level(), proc->get_entry_address());
+    } else {
+        throw general_error("cannot call non-procedure \"", callee, '"');
+    }
 }
 
 void parser::statement() {
@@ -121,9 +121,9 @@ void parser::statement() {
 void parser::read_statement() {
     lexer_.expect(token_type::READ);
     do {
-		variable *var = lvalue();
-		asm_.read();
-		asm_.store(top_->get_level() - var->get_level(), var->get_index());
+        variable *var = lvalue();
+        asm_.read();
+        asm_.store(top_->get_level() - var->get_level(), var->get_index());
     } while (lexer_.match(token_type::COMMA));
 }
 
@@ -131,42 +131,42 @@ void parser::write_statement() {
     lexer_.expect(token_type::WRITE);
     do {
         expression();
-		asm_.write();
+        asm_.write();
     } while (lexer_.match(token_type::COMMA));
 }
 
 void parser::assign_statement() {
-	variable *var = lvalue();
+    variable *var = lvalue();
     lexer_.expect(token_type::ASSIGN);
     expression();
-	asm_.store(top_->get_level() - var->get_level(), var->get_index());
+    asm_.store(top_->get_level() - var->get_level(), var->get_index());
 }
 
 // expressions
 variable *parser::lvalue() {
-	std::string ident = lexer_.expect(token_type::IDENTIFIER).second.value();
-	symbol *sym = top_->resolve(ident);
-	if (sym == nullptr) {
-		throw general_error("undeclared identifier \"", ident, '"');
-	} else if (sym->is_variable()) {
-		return dynamic_cast<variable*>(sym);
-	} else {
-		throw general_error("cannot assign value to a non-variable \"", ident, '"');
-	}
+    std::string ident = lexer_.expect(token_type::IDENTIFIER).second.value();
+    symbol *sym = top_->resolve(ident);
+    if (sym == nullptr) {
+        throw general_error("undeclared identifier \"", ident, '"');
+    } else if (sym->is_variable()) {
+        return dynamic_cast<variable*>(sym);
+    } else {
+        throw general_error("cannot assign value to a non-variable \"", ident, '"');
+    }
 }
 
 void parser::condition() {
     if (lexer_.match(token_type::ODD)) {
         expression();
-		asm_.operation(token_type::ODD);
+        asm_.operation(token_type::ODD);
     } else {
         expression();
         token_type cmp_op = lexer_.next().first;
         if (!is_compare_operator(cmp_op)) {
             throw general_error("expect a compare operator instead of ", *cmp_op);
         }
-		expression();
-		asm_.operation(cmp_op);
+        expression();
+        asm_.operation(cmp_op);
     }
 }
 
@@ -175,7 +175,7 @@ void parser::expression() {
     while (lexer_.peek(token_type::MUL) || lexer_.peek(token_type::DIV)) {
         token_type op = lexer_.next().first;
         term();
-		asm_.operation(op);
+        asm_.operation(op);
     }
 }
 
@@ -184,7 +184,7 @@ void parser::term() {
     while (lexer_.peek(token_type::ADD) || lexer_.peek(token_type::SUB)) {
         token_type op = lexer_.next().first;
         factor();
-		asm_.operation(op);
+        asm_.operation(op);
     }
 }
 
@@ -196,19 +196,19 @@ void parser::factor() {
             throw general_error("undeclared identifier \"", ident, '"');
         } else if (symb->is_variable()) {
             variable *var = dynamic_cast<variable*>(symb);
-			asm_.load(top_->get_level() - var->get_level(), var->get_index());
+            asm_.load(top_->get_level() - var->get_level(), var->get_index());
         } else if (symb->is_constant()) {
             constant *cons = dynamic_cast<constant*>(symb);
-			asm_.load(cons->get_value());
+            asm_.load(cons->get_value());
         } else {
             throw general_error("procedure cannot be used in expression");
         }
     } else if (lexer_.peek(token_type::NUMBER)) {
         std::string num = lexer_.next().second.value();
-		asm_.load(std::stoi(num));
+        asm_.load(std::stoi(num));
     } else if (lexer_.match(token_type::LPAREN)) {
         expression();
-		lexer_.expect(token_type::RPAREN);
+        lexer_.expect(token_type::RPAREN);
     } else {
         throw general_error("expect an identifier, a number or a expression instead of ", *lexer_.peek());
     }
@@ -220,11 +220,11 @@ parser::parser(lexer & lexer) : lexer_(lexer), top_(nullptr) {
 
 bytecode parser::program() {
     auto jump_to_main = asm_.branch();
-	enter_scope();
-	jump_to_main.set_address(subprogram());
-	lexer_.expect(token_type::PERIOD);
-	lexer_.expect(token_type::EOS);
-	leave_scope();
+    enter_scope();
+    jump_to_main.set_address(subprogram());
+    lexer_.expect(token_type::PERIOD);
+    lexer_.expect(token_type::EOS);
+    leave_scope();
     return asm_.get_bytecode();
 }
 

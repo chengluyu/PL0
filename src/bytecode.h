@@ -13,7 +13,7 @@ namespace pl0 {
 
 #define T(x) x,
 enum class opcode : int {
-	OPCODE_LIST(T)
+    OPCODE_LIST(T)
 };
 #undef T
 
@@ -28,19 +28,19 @@ inline const char* const operator* (opcode opc) {
 }
 
 enum class opt : int {
-	RET = 0,
-	SUB, ADD, DIV, MUL,
-	LE, LEQ, GE, GEQ, EQ, NEQ, ODD,
-	WRITE = 14, READ = 16
+    RET = 0,
+    SUB, ADD, DIV, MUL,
+    LE, LEQ, GE, GEQ, EQ, NEQ, ODD,
+    WRITE = 14, READ = 16
 };
 
 inline constexpr int operator* (opt x) {
-	return static_cast<int>(x);
+    return static_cast<int>(x);
 }
 
 #define OPERATOR(name, string) { token_type::name, opt::name },
 const std::unordered_map<token_type, opt> token2opt = {
-	TOKEN_LIST(IGNORE_TOKEN, OPERATOR, IGNORE_TOKEN)
+    TOKEN_LIST(IGNORE_TOKEN, OPERATOR, IGNORE_TOKEN)
 };
 #undef OPERATOR
 

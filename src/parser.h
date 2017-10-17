@@ -10,18 +10,18 @@ namespace pl0 {
 class parser {
     lexer &lexer_;
     scope *top_;
-	assembler asm_;
+    assembler asm_;
 
-	// scope control
-	void enter_scope() {
-		top_ = new scope(top_);
-	}
+    // scope control
+    void enter_scope() {
+        top_ = new scope(top_);
+    }
 
-	void leave_scope() {
-		scope *inner = top_;
-		top_ = top_->get_enclosing_scope();
-		delete inner;
-	}
+    void leave_scope() {
+        scope *inner = top_;
+        top_ = top_->get_enclosing_scope();
+        delete inner;
+    }
 
     int subprogram();
     // declarations
@@ -38,7 +38,7 @@ class parser {
     void write_statement();
     void assign_statement();
     // expressions
-	variable *lvalue();
+    variable *lvalue();
     void condition();
     void expression();
     void term();
