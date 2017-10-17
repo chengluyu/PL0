@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <cstring>
 
 #include "parser.h"
 #include "vm.h"
@@ -7,18 +8,10 @@
 void print_help() {
     std::cout <<
         "\n"
-        "Usage: pl0 [OPTIONS]\n"
+        "Usage: pl0 [options] filename\n"
         "\n"
-        " -h --help          : Show this message and exit.\n"
-        " -o --output <file> : Specify output file. When absent the output"
-                              "will be written to STDOUT.\n"
-        " -i --input <file>  : Specify input file, input file may be either"
-                              "text source code or pre-compiled byte"
-                              "code.\n"
-        " -c --compile       : Set to compiler mode. In this mode, pl0 will"
-                              "generate byte code only.\n"
-        " -r --run           : Set to interpreter mode. In this mode, pl0 will"
-                              "compile and run the code.\n"
+        "  --help           : Show this message and exit.\n"
+        "  --print-bytecode : Print bytecode after code generation.\n"
         ;
 }
 
@@ -33,12 +26,25 @@ void print_bytecode(const pl0::bytecode &code) {
 }
 
 int main(int argc, const char* const argv[]) {
-    if (argc < 2) {
-        std::cout << "Usage: pl0 [source code]" << std::endl;
+    if (argc < 2 || argv[1] == std::string { "--help" }) {
+        print_help();
         return 0;
     }
+    int filename_index = 1;
+    bool show_bytecode = false;
+    // check if there is any options
+    if (argv[filename_index] == std::string { "--print-bytecode" }) {
+        filename_index++;
+        show_bytecode = true;
+    }
+    if (filename_index == argc) {
+        std::cerr << "Expect filename after options.\n";
+        print_help();
+        return 1;
+    }
+    // compile and run the code
     try {
-        std::ifstream fin(argv[1]);
+        std::ifstream fin(argv[filename_index]);
         if (fin.fail()) {
             std::cerr << "Failed to open file: \"" << argv[1] << "\"\n";
             return 1;
@@ -46,6 +52,9 @@ int main(int argc, const char* const argv[]) {
         pl0::lexer lex(fin);
         pl0::parser parser(lex);
         pl0::bytecode code = parser.program();
+        if (show_bytecode) {
+            print_bytecode(code);
+        }
         pl0::execute(code);
     } catch (pl0::general_error error) {
         std::cout << error.what() << std::endl;
