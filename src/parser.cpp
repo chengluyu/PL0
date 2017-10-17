@@ -66,10 +66,10 @@ void parser::if_statement() {
 
 void parser::while_statement() {
     lexer_.expect(token_type::WHILE);
+    int loop_begin = asm_.get_next_address();
     condition();
     lexer_.expect(token_type::DO);
     auto branch_to_loop_end = asm_.branch_if_false();
-    int loop_begin = asm_.get_next_address();
     statement();
     asm_.branch(loop_begin);
     branch_to_loop_end.set_address(asm_.get_next_address());
