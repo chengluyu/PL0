@@ -215,12 +215,13 @@ parser::parser(lexer & lexer) : lexer_(lexer), top_(nullptr) {
 
 }
 
-void parser::program() {
+bytecode parser::program() {
 	enter_scope();
 	subprogram();
 	lexer_.expect(token_type::PERIOD);
 	lexer_.expect(token_type::EOS);
 	leave_scope();
+    return asm_.get_bytecode();
 }
 
 }

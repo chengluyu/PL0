@@ -40,6 +40,8 @@ public:
 	void read();
 	void write();
 	void operation(token_type tk);
+
+    bytecode get_bytecode();
 };
 
 }

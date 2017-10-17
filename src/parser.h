@@ -45,7 +45,7 @@ class parser {
     void factor();
 public:
     parser(lexer &lex);
-    void program();
+    bytecode program();
 };
 
 }
