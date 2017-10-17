@@ -19,6 +19,12 @@ public:
         , level_(enclosing_scope ? enclosing_scope->level_ + 1 : 0)
         , variable_count_(0) {}
 
+    ~scope() {
+        for (auto &pair : members_) {
+            delete pair.second;
+        }
+    }
+
     void define(symbol *sym) {
         auto result = members_.emplace(sym->get_name(), sym);
         if (!result.second) {
