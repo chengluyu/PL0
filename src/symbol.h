@@ -79,8 +79,8 @@ class procedure : public symbol {
     int level_;
     int entry_address_;
 public:
-    procedure(const std::string &name, int level, int entry_address)
-        : symbol(name), level_(level), entry_address_(entry_address) {}
+    procedure(const std::string &name, int level)
+        : symbol(name), level_(level) {}
 
     int get_level() const {
         return level_;
