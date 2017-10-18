@@ -71,8 +71,8 @@ The simulator does not adopt a single-stack design. Instead, the runtime stack i
 The old C code is deprecated and the new plan is listed below:
 
 - [x] The Python 3 version.
-- [ ] Add more exemplary code for test.
-- [ ] Transcript the Python 3 code to C++.
+- [x] Add more exemplary code for test.
+- [x] Transcript the Python 3 code to C++.
 - [ ] Add breakpoint support (make debug easier).
 
 ## License 
