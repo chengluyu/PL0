@@ -38,8 +38,8 @@ inline constexpr int operator* (opt x) {
     return static_cast<int>(x);
 }
 
-#define OPERATOR(name, string) { token_type::name, opt::name },
-const std::unordered_map<token_type, opt> token2opt = {
+#define OPERATOR(name, string) { token::name, opt::name },
+const std::unordered_map<token, opt> token2opt = {
     TOKEN_LIST(IGNORE_TOKEN, OPERATOR, IGNORE_TOKEN)
 };
 #undef OPERATOR

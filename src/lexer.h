@@ -10,6 +10,7 @@ namespace pl0 {
 
 class lexer {
     std::istream &input_stream_;
+    std::string literal_buffer_;
     token peek_;
 public:
     lexer(std::istream &input_stream) : input_stream_(input_stream) {
@@ -18,27 +19,30 @@ public:
 
     void advance();
 
-    token_type peek() {
-        return peek_.first;
+    inline token peek() {
+        return peek_;
     }
 
-    bool peek(token_type tk) {
-        return peek_.first == tk;
+    inline bool peek(token tk) {
+        return peek_ == tk;
     }
 
     token next() {
-        token save = std::move(peek_);
+        token save = peek_;
         advance();
         return save;
     }
 
-    token expect(token_type tk) {
-        if (peek_.first == tk) return next();
-        throw general_error("expect ", *tk, " instead of ", *peek_.first);
+    bool match(token tk) {
+        if (peek_ == tk) {
+            next();
+            return true;
+        }
+        return false;
     }
-
-    std::optional<token> match(token_type tk) {
-        return peek_.first == tk ? std::make_optional(next()) : std::nullopt;
+    
+    inline std::string get_literal() {
+        return literal_buffer_;
     }
 };
 

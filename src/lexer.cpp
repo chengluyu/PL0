@@ -13,74 +13,74 @@ inline bool is_identifier_part(int ch) {
 }
 
 void lexer::advance() {
+    // clear buffer
+    literal_buffer_.clear();
     // ignore whitespaces
     while (isspace(input_stream_.peek())) {
         input_stream_.ignore();
     }
     // check if input stream has ended
     if (input_stream_.peek() == std::char_traits<char>::eof()) {
-        peek_ = token_only(token_type::EOS);
+        peek_ = token::EOS;
         return;
     }
     // identifier or keyword
     if (is_identifier_start(input_stream_.peek())) {
-        std::string str;
         do {
-            str.push_back(input_stream_.get());
+            literal_buffer_.push_back(input_stream_.get());
         } while (is_identifier_part(input_stream_.peek()));
-        auto iter = keyword_map.find(str);
+        auto iter = keyword_map.find(literal_buffer_);
         if (iter == keyword_map.end()) {
-            peek_ = token_with_string(token_type::IDENTIFIER, std::move(str));
+            peek_ = token::IDENTIFIER;
         } else {
-            peek_ = token_only(iter->second);
+            peek_ = iter->second;
         }
         return;
     }
     // number
     if (isdigit(input_stream_.peek())) {
-        std::string num;
         do {
-            num.push_back(input_stream_.get());
+            literal_buffer_.push_back(input_stream_.get());
         } while (isdigit(input_stream_.peek()));
-        peek_ = token_with_string(token_type::NUMBER, std::move(num));
+        peek_ = token::NUMBER;
         return;
     }
     // punctuator or operator
     int copy;
     // save a copy for raising exception
     switch (copy = input_stream_.get()) {
-    case '+': peek_ = token_only(token_type::ADD); break;
-    case '-': peek_ = token_only(token_type::SUB); break;
-    case '*': peek_ = token_only(token_type::MUL); break;
-    case '/': peek_ = token_only(token_type::DIV); break;
+    case '+': peek_ = token::ADD; break;
+    case '-': peek_ = token::SUB; break;
+    case '*': peek_ = token::MUL; break;
+    case '/': peek_ = token::DIV; break;
     case ':':
         if (input_stream_.peek() == '=') {
-            peek_ = token_only(token_type::ASSIGN);
+            peek_ = token::ASSIGN;
             input_stream_.ignore();
             break;
         }
         throw general_error("expect '=' after ':'");
-    case '(': peek_ = token_only(token_type::LPAREN); break;
-    case ')': peek_ = token_only(token_type::RPAREN); break;
-    case ';': peek_ = token_only(token_type::SEMICOLON); break;
-    case '.': peek_ = token_only(token_type::PERIOD); break;
-    case ',': peek_ = token_only(token_type::COMMA); break;
-    case '=': peek_ = token_only(token_type::EQ); break;
-    case '#': peek_ = token_only(token_type::NEQ); break;
+    case '(': peek_ = token::LPAREN; break;
+    case ')': peek_ = token::RPAREN; break;
+    case ';': peek_ = token::SEMICOLON; break;
+    case '.': peek_ = token::PERIOD; break;
+    case ',': peek_ = token::COMMA; break;
+    case '=': peek_ = token::EQ; break;
+    case '#': peek_ = token::NEQ; break;
     case '<':
         if (input_stream_.peek() == '=') {
-            peek_ = token_only(token_type::LEQ);
+            peek_ = token::LEQ;
             input_stream_.ignore();
         } else {
-            peek_ = token_only(token_type::LE);
+            peek_ = token::LE;
         }
         break;
     case '>':
         if (input_stream_.peek() == '=') {
-            peek_ = token_only(token_type::GEQ);
+            peek_ = token::GEQ;
             input_stream_.ignore();
         } else {
-            peek_ = token_only(token_type::GE);
+            peek_ = token::GE;
         }
         break;
     default:

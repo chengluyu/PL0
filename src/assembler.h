@@ -39,7 +39,7 @@ public:
     void leave();
     void read();
     void write();
-    void operation(token_type tk);
+    void operation(token tk);
 
     bytecode get_bytecode();
 };

@@ -88,7 +88,7 @@ void assembler::write() {
     emit(opcode::OPR, IGNORE, *opt::WRITE);
 }
 
-void assembler::operation(token_type tk) {
+void assembler::operation(token tk) {
     auto iter = token2opt.find(tk);
     if (iter == token2opt.end()) {
         throw general_error("token ", *tk, " cannot be used as operator");
