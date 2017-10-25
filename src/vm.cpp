@@ -103,5 +103,5 @@ void pl0::execute(const bytecode & code, int entry_addr) {
             break;
         }
     }
-    delete stack;
+    delete [] stack;
 }
