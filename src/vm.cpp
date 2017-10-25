@@ -82,7 +82,8 @@ void pl0::execute(const bytecode & code, int entry_addr) {
             break;
         case opcode::OPR:
             if (address == *opt::ODD) {
-                stack[++sp] = stack[sp--] % 2;
+                int result = stack[sp--] % 2;
+                stack[++sp] = result;
             } else if (address == *opt::READ) {
                 int tmp;
                 std::cin >> tmp;
