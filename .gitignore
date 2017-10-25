@@ -186,3 +186,8 @@ Temporary Items
 .apdisk
 
 # End of https://www.gitignore.io/api/macos
+
+obj
+bin
+*.xcodeproj
+*.xcworkspace
