@@ -46,9 +46,7 @@ void lexer::advance() {
         return;
     }
     // punctuator or operator
-    int copy;
-    // save a copy for raising exception
-    switch (copy = input_stream_.get()) {
+    switch (input_stream_.get()) {
     case '+': peek_ = token::ADD; break;
     case '-': peek_ = token::SUB; break;
     case '*': peek_ = token::MUL; break;
@@ -57,9 +55,11 @@ void lexer::advance() {
         if (input_stream_.peek() == '=') {
             peek_ = token::ASSIGN;
             input_stream_.ignore();
-            break;
+        } else {
+            peek_ = token::ILLEGAL;
+            input_stream_.unget();
         }
-        throw general_error("expect '=' after ':'");
+        break;
     case '(': peek_ = token::LPAREN; break;
     case ')': peek_ = token::RPAREN; break;
     case ';': peek_ = token::SEMICOLON; break;
@@ -84,7 +84,9 @@ void lexer::advance() {
         }
         break;
     default:
-        throw general_error("unrecognized character: '", static_cast<char>(copy), '\'');
+        peek_ = token::ILLEGAL;
+        input_stream_.unget();
+        break;
     }
 }
 

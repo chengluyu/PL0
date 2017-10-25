@@ -4,7 +4,6 @@
 #include <istream>
 
 #include "token.h"
-#include "util.h"
 
 namespace pl0 {
 
