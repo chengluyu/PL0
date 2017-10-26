@@ -59,9 +59,9 @@ void parser::if_statement() {
     expect(token::IF);
     condition();
     expect(token::THEN);
-    auto branch_to_conseq_end = asm_.branch_if_false();
+    auto br_conseq_end = asm_.branch_if_false();
     statement();
-    branch_to_conseq_end.set_address(asm_.get_next_address());
+    br_conseq_end->address = asm_.get_next_address();
 }
 
 void parser::while_statement() {
@@ -69,10 +69,10 @@ void parser::while_statement() {
     int loop_begin = asm_.get_next_address();
     condition();
     expect(token::DO);
-    auto branch_to_loop_end = asm_.branch_if_false();
+    auto br_loop_end = asm_.branch_if_false();
     statement();
     asm_.branch(loop_begin);
-    branch_to_loop_end.set_address(asm_.get_next_address());
+    br_loop_end->address = asm_.get_next_address();
 }
 
 void parser::call_statement() {
@@ -221,9 +221,9 @@ parser::parser(lexer & lexer) : lexer_(lexer), top_(nullptr) {
 }
 
 bytecode parser::program() {
-    auto jump_to_main = asm_.branch();
+    auto br_main = asm_.branch();
     enter_scope();
-    jump_to_main.set_address(subprogram());
+    br_main->address = subprogram();
     expect(token::PERIOD);
     expect(token::EOS);
     leave_scope();

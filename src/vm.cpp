@@ -38,14 +38,12 @@ void pl0::execute(const bytecode & code, int entry_addr) {
     stack[bp + offset::return_address] = codelen;
 
     while (pc < codelen) {
-        opcode opc;
-        int level, address;
-        std::tie(opc, level, address) = code[pc];
+        const instruction &ins = code[pc];
         pc++;
 
         /* get bp of the frame whose distance from current frame is given */
         auto resolve = [&]() -> int {
-            int fp = bp, dist = level;
+            int fp = bp, dist = ins.level;
             while (dist > 0) {
                 fp = stack[fp + offset::declaration_frame];
                 dist--;
@@ -53,15 +51,15 @@ void pl0::execute(const bytecode & code, int entry_addr) {
             return fp;
         };
 
-        switch (opc) {
+        switch (ins.op) {
         case opcode::LIT:
-            stack[++sp] = address;
+            stack[++sp] = ins.address;
             break;
         case opcode::LOD:
-            stack[++sp] = stack[resolve() + offset::local + address];
+            stack[++sp] = stack[resolve() + offset::local + ins.address];
             break;
         case opcode::STO:
-            stack[resolve() + offset::local + address] = stack[sp--];
+            stack[resolve() + offset::local + ins.address] = stack[sp--];
             break;
         case opcode::CAL:
             // save context
@@ -69,35 +67,35 @@ void pl0::execute(const bytecode & code, int entry_addr) {
             stack[sp + offset::enclosing_frame] = bp;
             stack[sp + offset::declaration_frame] = resolve();
             bp = sp;
-            pc = address;
+            pc = ins.address;
             break;
         case opcode::INT:
-            sp += address;
+            sp += ins.address;
             break;
         case opcode::JMP:
-            pc = address;
+            pc = ins.address;
             break;
         case opcode::JPC:
-            if (!stack[sp--]) pc = address;
+            if (!stack[sp--]) pc = ins.address;
             break;
         case opcode::OPR:
-            if (address == *opt::ODD) {
+            if (ins.address == *opt::ODD) {
                 int result = stack[sp--] % 2;
                 stack[++sp] = result;
-            } else if (address == *opt::READ) {
+            } else if (ins.address == *opt::READ) {
                 int tmp;
                 std::cin >> tmp;
                 stack[++sp] = tmp;
-            } else if (address == *opt::WRITE) {
+            } else if (ins.address == *opt::WRITE) {
                 std::cout << stack[sp--] << '\n';
-            } else if (address == *opt::RET) {
+            } else if (ins.address == *opt::RET) {
                 // restore context
                 pc = stack[bp];
                 sp = bp;
                 bp = stack[bp + 1];
             } else {
                 int rhs = stack[sp--], lhs = stack[sp--];
-                auto op = bifunctors.find(opt(address))->second;
+                auto op = bifunctors.find(opt(ins.address))->second;
                 stack[++sp] = op(lhs, rhs);
             }
             break;

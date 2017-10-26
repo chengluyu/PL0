@@ -13,17 +13,6 @@ class assembler {
 
     void emit(opcode op, int level, int address);
 public:
-    class backpatcher {
-        assembler &asm_;
-        std::size_t at_;
-
-        backpatcher(assembler &asmblr);
-        friend class assembler;
-    public:
-        void set_level(int level);
-        void set_address(int address);
-    };
-
     int  get_next_address();
     int  get_last_address();
     void load(int value);

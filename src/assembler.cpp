@@ -4,23 +4,6 @@
 
 namespace pl0 {
 
-assembler::backpatcher::backpatcher(assembler &asmblr)
-    : asm_(asmblr), at_(asmblr.get_last_address()) {}
-
-void assembler::backpatcher::set_level(int level) {
-    opcode op;
-    int address;
-    std::tie(op, std::ignore, address) = asm_.code_[at_];
-    asm_.code_[at_] = std::make_tuple(op, level, address);
-}
-
-void assembler::backpatcher::set_address(int address) {
-    opcode op;
-    int level;
-    std::tie(op, level, std::ignore) = asm_.code_[at_];
-    asm_.code_[at_] = std::make_tuple(op, level, address);
-}
-
 void assembler::emit(opcode op, int level, int address) {
     code_.push_back({ op, level, address });
 }
@@ -58,18 +41,18 @@ void assembler::branch(int target) {
     emit(opcode::JMP, IGNORE, target);
 }
 
-assembler::backpatcher assembler::branch() {
+backpatcher assembler::branch() {
     emit(opcode::JMP, IGNORE, IGNORE);
-    return backpatcher{ *this };
+    return &code_.back();
 }
 
 void assembler::branch_if_false(int target) {
     emit(opcode::JPC, IGNORE, target);
 }
 
-assembler::backpatcher assembler::branch_if_false() {
+backpatcher assembler::branch_if_false() {
     emit(opcode::JPC, IGNORE, IGNORE);
-    return backpatcher{ *this };
+    return &code_.back();
 }
 
 void assembler::enter(int scope_var_count) {

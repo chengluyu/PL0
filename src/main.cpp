@@ -17,11 +17,8 @@ void print_help() {
 
 void print_bytecode(const pl0::bytecode &code) {
     for (size_t i = 0; i < code.size(); i++) {
-        std::cout
-            << i << '\t'
-            << *(std::get<0>(code[i])) << '\t'
-            << std::get<1>(code[i]) << '\t'
-            << std::get<2>(code[i]) << '\n';
+        std::cout << i << '\t' << *code[i].op << '\t'
+            << code[i].level << '\t' << code[i].address << '\n';
     }
 }
 

@@ -1,7 +1,6 @@
 #ifndef PL_ZERO_BYTECODE_H
 #define PL_ZERO_BYTECODE_H
 
-#include <tuple>
 #include <vector>
 
 #include "token.h"
@@ -44,7 +43,13 @@ const std::unordered_map<token, opt> token2opt = {
 };
 #undef OPERATOR
 
-typedef std::tuple<opcode, int, int> instruction;
+struct instruction {
+    opcode op;
+    int level;
+    int address;
+};
+
+typedef instruction *backpatcher;
 
 typedef std::vector<instruction> bytecode;
 
