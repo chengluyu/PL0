@@ -49,9 +49,17 @@ struct instruction {
     int address;
 };
 
-typedef instruction *backpatcher;
-
 typedef std::vector<instruction> bytecode;
+
+class backpatcher {
+    bytecode *code_;
+    int pos_;
+public:
+    backpatcher(bytecode &code, int pos) : code_(&code), pos_(pos) { }
+    int get_level() { return (*code_)[pos_].level; }
+    void set_level(int level) { (*code_)[pos_].level = level; }
+    void set_address(int address) { (*code_)[pos_].address = address; }
+};
 
 }
 

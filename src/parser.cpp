@@ -1,4 +1,5 @@
 #include "parser.h"
+#include <iostream>
 
 namespace pl0 {
 
@@ -41,8 +42,18 @@ void parser::procedure_decl() {
     top_->define(proc);
     expect(token::SEMICOLON);
     enter_scope();
-    proc->set_entry_address(subprogram());
+    int proc_entry_addr = subprogram();
+    proc->set_entry_address(proc_entry_addr);
     expect(token::SEMICOLON);
+    // backpatch all call instructions
+    auto iter = calls_.find(procname);
+    if (iter != calls_.end()) {
+        for (auto bp : iter->second) {
+            bp.set_level(bp.get_level() - top_->get_level() + 1);
+            bp.set_address(proc_entry_addr);
+        }
+        calls_.erase(iter);
+    }
     leave_scope();
 }
 
@@ -61,7 +72,7 @@ void parser::if_statement() {
     expect(token::THEN);
     auto br_conseq_end = asm_.branch_if_false();
     statement();
-    br_conseq_end->address = asm_.get_next_address();
+    br_conseq_end.set_address(asm_.get_next_address());
 }
 
 void parser::while_statement() {
@@ -72,7 +83,7 @@ void parser::while_statement() {
     auto br_loop_end = asm_.branch_if_false();
     statement();
     asm_.branch(loop_begin);
-    br_loop_end->address = asm_.get_next_address();
+    br_loop_end.set_address(asm_.get_next_address());
 }
 
 void parser::call_statement() {
@@ -86,7 +97,17 @@ void parser::call_statement() {
         throw general_error("undeclared procedure \"", callee, '"');
     } else if (symb->is_procedure()) {
         procedure *proc = dynamic_cast<procedure*>(symb);
-        asm_.call(top_->get_level() - proc->get_level(), proc->get_entry_address());
+        if (proc->get_entry_address() == procedure::invalid_address) {
+            // the entry address of the callee has not been identified
+            auto iter = calls_.find(callee);
+            auto calling = asm_.call(top_->get_level());
+            if (iter == calls_.end())
+                calls_[callee] = { calling };
+            else
+                iter->second.push_back(calling);
+        } else {
+            asm_.call(top_->get_level() - proc->get_level(), proc->get_entry_address());
+        }
     } else {
         throw general_error("cannot call non-procedure \"", callee, '"');
     }
@@ -223,10 +244,14 @@ parser::parser(lexer & lexer) : lexer_(lexer), top_(nullptr) {
 bytecode parser::program() {
     auto br_main = asm_.branch();
     enter_scope();
-    br_main->address = subprogram();
+    br_main.set_address(subprogram());
     expect(token::PERIOD);
     expect(token::EOS);
     leave_scope();
+    // check if there is any undeclared call instructions
+    if (!calls_.empty()) {
+        throw general_error("undeclared calls discovered");
+    }
     return asm_.get_bytecode();
 }
 

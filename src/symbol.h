@@ -70,8 +70,10 @@ class procedure : public symbol {
     int level_;
     int entry_address_;
 public:
+    enum { invalid_address = -1 };
+    
     procedure(const std::string &name, int level)
-        : symbol(name), level_(level) {}
+        : symbol(name), level_(level), entry_address_(invalid_address) {}
 
     int get_level() const {
         return level_;

@@ -32,9 +32,9 @@ void assembler::call(int distance, int entry) {
     emit(opcode::CAL, distance, entry);
 }
 
-assembler::backpatcher assembler::call() {
-    emit(opcode::CAL, IGNORE, IGNORE);
-    return backpatcher{ *this };
+backpatcher assembler::call(int caller_level) {
+    emit(opcode::CAL, caller_level, IGNORE);
+    return backpatcher { code_, get_last_address() };
 }
 
 void assembler::branch(int target) {
@@ -43,7 +43,7 @@ void assembler::branch(int target) {
 
 backpatcher assembler::branch() {
     emit(opcode::JMP, IGNORE, IGNORE);
-    return &code_.back();
+    return backpatcher { code_, get_last_address() };
 }
 
 void assembler::branch_if_false(int target) {
@@ -52,7 +52,7 @@ void assembler::branch_if_false(int target) {
 
 backpatcher assembler::branch_if_false() {
     emit(opcode::JPC, IGNORE, IGNORE);
-    return &code_.back();
+    return backpatcher { code_, get_last_address() };
 }
 
 void assembler::enter(int scope_var_count) {

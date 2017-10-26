@@ -19,7 +19,7 @@ public:
     void load(int distance, int index);
     void store(int distance, int index);
     void        call(int distance, int entry);
-    backpatcher call();
+    backpatcher call(int caller_level);
     void        branch(int target);
     backpatcher branch();
     void        branch_if_false(int target);

@@ -11,6 +11,7 @@ class parser {
     lexer &lexer_;
     scope *top_;
     assembler asm_;
+    std::unordered_map<std::string, std::vector<backpatcher>> calls_;
 
     // scope control
     void enter_scope() {
