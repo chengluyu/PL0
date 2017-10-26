@@ -8,7 +8,7 @@ begin
         write y;
         tmp := y;
         y := y + x;
-        x := tmp;
+        x := tmp
         n := n - 1;
         call fib
     end
