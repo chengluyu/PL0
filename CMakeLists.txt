@@ -1,0 +1,7 @@
+project(pl0)
+cmake_minimum_required(VERSION 3.8)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+aux_source_directory(src DIR_SRCS)
+add_executable(pl0 ${DIR_SRCS})
