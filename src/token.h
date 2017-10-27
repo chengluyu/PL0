@@ -10,6 +10,7 @@ namespace pl0 {
 #define IGNORE_TOKEN(name, string)
 
 #define TOKEN_LIST(T, O, K)\
+    T(UNUSED, "unused") \
     /* End of source indicator */ \
     T(EOS, "end of source") \
     T(NUMBER, "number") \
