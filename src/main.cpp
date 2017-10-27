@@ -35,14 +35,14 @@ int main(int argc, const char* const argv[]) {
         show_bytecode = true;
     }
     if (filename_index == argc) {
-        std::cerr << "Expect filename after options.\n";
+        std::cerr << "Error: expect filename after options.\n";
         print_help();
         return 1;
     }
     // compile and run the code
     std::ifstream fin(argv[filename_index]);
     if (fin.fail()) {
-        std::cerr << "Failed to open file: \"" << argv[1] << "\"\n";
+        std::cerr << "Error: failed to open file: \"" << argv[1] << "\"\n";
         return 1;
     }
     pl0::lexer lex(fin);
@@ -52,7 +52,7 @@ int main(int argc, const char* const argv[]) {
         code = parser.program();
     } catch (pl0::general_error error) {
         pl0::location loc = lex.current_location();
-        std::cout << "Error (" << loc.to_string() << "): "
+        std::cout << "Error(" << loc.to_string() << "): "
                   << error.what() << std::endl;
     }
     if (show_bytecode) {
