@@ -5,7 +5,7 @@
 
 namespace pl0 {
 
-void execute(const bytecode &code, int entry_addr = 0);
+void execute(const bytecode &code);
 
 }
 

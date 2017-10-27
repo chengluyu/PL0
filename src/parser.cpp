@@ -242,9 +242,8 @@ parser::parser(lexer & lexer) : lexer_(lexer), top_(nullptr) {
 }
 
 bytecode parser::program() {
-    auto br_main = asm_.branch();
     enter_scope();
-    br_main.set_address(subprogram());
+    size_t start = static_cast<size_t>(subprogram());
     expect(token::PERIOD);
     expect(token::EOS);
     leave_scope();
@@ -252,7 +251,32 @@ bytecode parser::program() {
     if (!calls_.empty()) {
         throw general_error("undeclared calls discovered");
     }
-    return asm_.get_bytecode();
+    // put main in the front
+    bytecode result;
+    if (start > 0) {
+        const bytecode &code = asm_.get_bytecode();
+        size_t offset = code.size() - start;
+        for (size_t i = start; i < code.size(); i++) {
+            result.push_back(code[i]);
+            if (code[i].op == opcode::CAL)
+                result.back().address += offset;
+            else if (code[i].op == opcode::JMP || code[i].op == opcode::JPC) {
+                instruction &ins = result.back();
+                if (ins.address > start)
+                    ins.address -= start;
+                else
+                    ins.address += offset;
+            }
+        }
+        for (size_t i = 0; i < start; i++) {
+            result.push_back(code[i]);
+            if (code[i].op == opcode::CAL || code[i].op == opcode::JMP || code[i].op == opcode::JPC)
+                result.back().address += offset;
+        }
+    } else {
+        result = asm_.get_bytecode();
+    }
+    return result;
 }
 
 }

@@ -79,7 +79,7 @@ void assembler::operation(token tk) {
     emit(opcode::OPR, IGNORE, *iter->second);
 }
 
-bytecode assembler::get_bytecode() {
+const bytecode &assembler::get_bytecode() {
     return code_;
 }
 

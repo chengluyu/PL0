@@ -15,7 +15,7 @@ enum offset {
     /* offset to local variables */         local
 };
 
-void pl0::execute(const bytecode & code, int entry_addr) {
+void pl0::execute(const bytecode & code) {
     int pc = 0;
     int *stack = new int[STACK_SIZE];
     int bp = 0;

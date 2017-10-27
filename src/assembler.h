@@ -30,7 +30,7 @@ public:
     void write();
     void operation(token tk);
 
-    bytecode get_bytecode();
+    const bytecode &get_bytecode();
 };
 
 }
