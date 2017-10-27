@@ -40,21 +40,24 @@ int main(int argc, const char* const argv[]) {
         return 1;
     }
     // compile and run the code
-    try {
-        std::ifstream fin(argv[filename_index]);
-        if (fin.fail()) {
-            std::cerr << "Failed to open file: \"" << argv[1] << "\"\n";
-            return 1;
-        }
-        pl0::lexer lex(fin);
-        pl0::parser parser(lex);
-        pl0::bytecode code = parser.program();
-        if (show_bytecode) {
-            print_bytecode(code);
-        }
-        pl0::execute(code);
-    } catch (pl0::general_error error) {
-        std::cout << error.what() << std::endl;
+    std::ifstream fin(argv[filename_index]);
+    if (fin.fail()) {
+        std::cerr << "Failed to open file: \"" << argv[1] << "\"\n";
+        return 1;
     }
+    pl0::lexer lex(fin);
+    pl0::parser parser(lex);
+    pl0::bytecode code;
+    try {
+        code = parser.program();
+    } catch (pl0::general_error error) {
+        pl0::location loc = lex.current_location();
+        std::cout << "Error (" << loc.to_string() << "): "
+                  << error.what() << std::endl;
+    }
+    if (show_bytecode) {
+        print_bytecode(code);
+    }
+    pl0::execute(code);
     return 0;
 }

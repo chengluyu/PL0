@@ -7,14 +7,29 @@
 
 namespace pl0 {
 
+class location {
+    int line_;
+    int column_;
+public:
+    location(int line, int column) : line_(line), column_(column) { }
+
+    std::string to_string() const {
+        return std::to_string(line_) + ':' + std::to_string(column_);
+    }
+};
+
 class lexer {
     std::istream &input_stream_;
     std::string literal_buffer_;
     token peek_;
+    int line_;
+    int column_;
+
+    inline int get();
+    inline token select(char cond, token conseq, token altern);
 public:
-    lexer(std::istream &input_stream) : input_stream_(input_stream) {
-        advance();
-    }
+    lexer(std::istream &input_stream)
+        : input_stream_(input_stream), line_(1), column_(1) { advance(); }
 
     void advance();
 
@@ -42,6 +57,10 @@ public:
     
     inline std::string get_literal() {
         return literal_buffer_;
+    }
+
+    inline location current_location() {
+        return location { line_, column_ };
     }
 };
 
