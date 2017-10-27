@@ -29,7 +29,7 @@ class parser {
         if (lexer_.peek(tk))
             lexer_.advance();
         else
-            throw general_error("expect a number instead of ", *lexer_.peek());
+            throw general_error("expect ", *tk, " instead of ", *lexer_.peek());
     }
     
     std::string identifier() {
