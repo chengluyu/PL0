@@ -10,6 +10,10 @@ You can see the full grammar (written in BNF) of common PL/0 language at [Wikipe
 2. The parser should not generate abstract syntax trees, instead it should generate byte codes directly. 
 3. A virtual machine should be done in order to simulate the execution of byte codes.
 
+## Build
+
+You can build with CMake by run cmake in the root directory of this project. A compiler with C++ 14 support is required.
+
 ## Specification of Target Machine
 
 In this section, the target instruction set will be demonstrated. The target runtime environment is a stack-based machine. There are four register and a stack in the target machine.
