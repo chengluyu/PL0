@@ -64,6 +64,7 @@ class parser {
     void read_statement();
     void write_statement();
     void assign_statement();
+    void return_statement();
     // expressions
     variable *lvalue();
     void condition();

@@ -46,6 +46,7 @@ namespace pl0 {
     K(IF, "if") \
     K(PROCEDURE, "procedure") \
     K(READ, "read") \
+    K(RETURN, "return") \
     K(THEN, "then") \
     K(VAR, "var") \
     K(WHILE, "while") \

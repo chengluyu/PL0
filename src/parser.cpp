@@ -133,6 +133,9 @@ void parser::statement() {
     case token::CALL:
         call_statement();
         break;
+    case token::RETURN:
+        return_statement();
+        break;
     default:
         assign_statement();
         break;
@@ -161,6 +164,11 @@ void parser::assign_statement() {
     expect(token::ASSIGN);
     expression();
     asm_.store(top_->get_level() - var->get_level(), var->get_index());
+}
+
+void parser::return_statement() {
+    expect(token::RETURN);
+    asm_.leave();
 }
 
 // expressions
