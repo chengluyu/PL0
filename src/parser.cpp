@@ -70,9 +70,16 @@ void parser::if_statement() {
     expect(token::IF);
     condition();
     expect(token::THEN);
-    auto br_conseq_end = asm_.branch_if_false();
+    auto test_failed = asm_.branch_if_false();
     statement();
-    br_conseq_end.set_address(asm_.get_next_address());
+    if (lexer_.match(token::ELSE)) {
+        auto br_altern_end = asm_.branch();
+        test_failed.set_address(asm_.get_next_address());
+        statement();
+        br_altern_end.set_address(asm_.get_next_address());
+    } else {
+        test_failed.set_address(asm_.get_next_address());
+    }
 }
 
 void parser::while_statement() {
