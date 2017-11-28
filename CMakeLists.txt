@@ -1,7 +1,22 @@
-project(pl0)
 cmake_minimum_required(VERSION 3.8)
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-aux_source_directory(src DIR_SRCS)
-add_executable(pl0 ${DIR_SRCS})
+project(PL0)
+
+set(CMAKE_CXX_STANDARD 17)
+
+set(SOURCE_FILES
+        src/assembler.cpp
+        src/assembler.h
+        src/bytecode.h
+        src/lexer.cpp
+        src/lexer.h
+        src/main.cpp
+        src/parser.cpp
+        src/parser.h
+        src/scope.h
+        src/symbol.h
+        src/token.h
+        src/util.h
+        src/vm.cpp
+        src/vm.h)
+
+add_executable(PL0 ${SOURCE_FILES})
