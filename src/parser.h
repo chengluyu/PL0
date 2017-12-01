@@ -10,8 +10,6 @@ namespace pl0 {
 class parser {
     lexer &lexer_;
     scope *top_;
-    assembler asm_;
-    std::unordered_map<std::string, std::vector<backpatcher>> calls_;
 
     // scope control
     void enter_scope();
@@ -22,7 +20,7 @@ class parser {
     std::string identifier();
     int number();
 
-    int subprogram();
+    void subprogram();
     // declarations
     void variable_decl();
     void constant_decl();
@@ -45,7 +43,7 @@ class parser {
     void factor();
 public:
     explicit parser(lexer &lex);
-    bytecode program();
+    void program();
 };
 
 }

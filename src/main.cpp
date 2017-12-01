@@ -47,17 +47,12 @@ int main(int argc, const char* const argv[]) {
     }
     pl0::lexer lex(fin);
     pl0::parser parser(lex);
-    pl0::bytecode code;
     try {
-        code = parser.program();
+        parser.program();
     } catch (pl0::general_error error) {
         pl0::location loc = lex.current_location();
         std::cout << "Error(" << loc.to_string() << "): "
                   << error.what() << std::endl;
     }
-    if (show_bytecode) {
-        print_bytecode(code);
-    }
-    pl0::execute(code);
     return 0;
 }
