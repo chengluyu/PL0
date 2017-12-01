@@ -14,41 +14,13 @@ class parser {
     std::unordered_map<std::string, std::vector<backpatcher>> calls_;
 
     // scope control
-    void enter_scope() {
-        top_ = new scope(top_);
-    }
-
-    void leave_scope() {
-        scope *inner = top_;
-        top_ = top_->get_enclosing_scope();
-        delete inner;
-    }
+    void enter_scope();
+    void leave_scope();
     
-    // helper functions
-    void expect(token tk) {
-        if (lexer_.peek(tk))
-            lexer_.advance();
-        else
-            throw general_error("expect ", *tk, " instead of ", *lexer_.peek());
-    }
-    
-    std::string identifier() {
-        if (lexer_.peek(token::IDENTIFIER)) {
-            std::string result = lexer_.get_literal();
-            lexer_.advance();
-            return result;
-        }
-        throw general_error("expect an identifier instead of ", *lexer_.peek());
-    }
-    
-    int number() {
-        if (lexer_.peek(token::NUMBER)) {
-            int num = std::stoi(lexer_.get_literal());
-            lexer_.advance();
-            return num;
-        }
-        throw general_error("expect a number instead of ", *lexer_.peek());
-    }
+    // lexical helper functions
+    void expect(token tk);
+    std::string identifier();
+    int number();
 
     int subprogram();
     // declarations
@@ -72,7 +44,7 @@ class parser {
     void term();
     void factor();
 public:
-    parser(lexer &lex);
+    explicit parser(lexer &lex);
     bytecode program();
 };
 

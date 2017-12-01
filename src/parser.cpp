@@ -38,7 +38,7 @@ void parser::constant_decl() {
 void parser::procedure_decl() {
     expect(token::PROCEDURE);
     std::string procname = identifier();
-    procedure *proc = new procedure(procname, top_->get_level());
+    auto *proc = new procedure(procname, top_->get_level());
     top_->define(proc);
     expect(token::SEMICOLON);
     enter_scope();
@@ -96,14 +96,14 @@ void parser::while_statement() {
 void parser::call_statement() {
     expect(token::CALL);
     std::string callee = identifier();
-    symbol *symb = top_->resolve(callee);
-    if (symb == nullptr) {
+    symbol *sym = top_->resolve(callee);
+    if (sym == nullptr) {
         // This procedure has not been declared yet,
         // but it may be declared later. We will cope
         // with this situation in the future version.
         throw general_error("undeclared procedure \"", callee, '"');
-    } else if (symb->is_procedure()) {
-        procedure *proc = dynamic_cast<procedure*>(symb);
+    } else if (sym->is_procedure()) {
+        auto *proc = dynamic_cast<procedure*>(sym);
         if (proc->get_entry_address() == procedure::invalid_address) {
             // the entry address of the callee has not been identified
             auto iter = calls_.find(callee);
@@ -180,14 +180,14 @@ void parser::return_statement() {
 
 // expressions
 variable *parser::lvalue() {
-    std::string ident = identifier();
-    symbol *sym = top_->resolve(ident);
+    std::string id = identifier();
+    symbol *sym = top_->resolve(id);
     if (sym == nullptr) {
-        throw general_error("undeclared identifier \"", ident, '"');
+        throw general_error("undeclared identifier \"", id, '"');
     } else if (sym->is_variable()) {
         return dynamic_cast<variable*>(sym);
     } else {
-        throw general_error("cannot assign value to a non-variable \"", ident, '"');
+        throw general_error("cannot assign value to a non-variable \"", id, '"');
     }
 }
 
@@ -226,16 +226,16 @@ void parser::term() {
 
 void parser::factor() {
     if (lexer_.peek(token::IDENTIFIER)) {
-        std::string ident = lexer_.get_literal();
+        std::string id = lexer_.get_literal();
         lexer_.advance();
-        symbol *symb = top_->resolve(ident);
-        if (symb == nullptr) {
-            throw general_error("undeclared identifier \"", ident, '"');
-        } else if (symb->is_variable()) {
-            variable *var = dynamic_cast<variable*>(symb);
+        symbol *sym = top_->resolve(id);
+        if (sym == nullptr) {
+            throw general_error("undeclared identifier \"", id, '"');
+        } else if (sym->is_variable()) {
+            auto *var = dynamic_cast<variable*>(sym);
             asm_.load(top_->get_level() - var->get_level(), var->get_index());
-        } else if (symb->is_constant()) {
-            constant *cons = dynamic_cast<constant*>(symb);
+        } else if (sym->is_constant()) {
+            auto *cons = dynamic_cast<constant*>(sym);
             asm_.load(cons->get_value());
         } else {
             throw general_error("procedure cannot be used in expression");
@@ -258,7 +258,7 @@ parser::parser(lexer & lexer) : lexer_(lexer), top_(nullptr) {
 
 bytecode parser::program() {
     enter_scope();
-    size_t start = static_cast<size_t>(subprogram());
+    auto start = static_cast<size_t>(subprogram());
     expect(token::PERIOD);
     expect(token::EOS);
     leave_scope();
@@ -292,6 +292,41 @@ bytecode parser::program() {
         result = asm_.get_bytecode();
     }
     return result;
+}
+
+void parser::enter_scope() {
+    top_ = new scope(top_);
+}
+
+void parser::leave_scope() {
+    scope *inner = top_;
+    top_ = top_->get_enclosing_scope();
+    delete inner;
+}
+
+void parser::expect(token tk) {
+    if (lexer_.peek(tk))
+        lexer_.advance();
+    else
+        throw general_error("expect ", *tk, " instead of ", *lexer_.peek());
+}
+
+std::string parser::identifier() {
+    if (lexer_.peek(token::IDENTIFIER)) {
+        std::string result = lexer_.get_literal();
+        lexer_.advance();
+        return result;
+    }
+    throw general_error("expect an identifier instead of ", *lexer_.peek());
+}
+
+int parser::number() {
+    if (lexer_.peek(token::NUMBER)) {
+        int num = std::stoi(lexer_.get_literal());
+        lexer_.advance();
+        return num;
+    }
+    throw general_error("expect a number instead of ", *lexer_.peek());
 }
 
 }
