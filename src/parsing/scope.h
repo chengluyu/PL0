@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 #include "symbol.h"
-#include "util.h"
+#include "../util.h"
 
 namespace pl0 {
 

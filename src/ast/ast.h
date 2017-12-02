@@ -3,9 +3,9 @@
 
 #include <vector>
 
-#include "token.h"
-#include "scope.h"
-#include "symbol.h"
+#include "../parsing/token.h"
+#include "../parsing/scope.h"
+#include "../parsing/symbol.h"
 
 namespace pl0::ast {
 

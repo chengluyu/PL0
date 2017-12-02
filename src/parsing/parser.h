@@ -3,8 +3,8 @@
 
 #include "lexer.h"
 #include "scope.h"
-#include "assembler.h"
-#include "ast.h"
+#include "../assembler.h"
+#include "../ast/ast.h"
 
 namespace pl0 {
 

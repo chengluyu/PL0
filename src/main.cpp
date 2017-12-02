@@ -1,9 +1,9 @@
 #include <fstream>
 #include <iostream>
 
-#include "parser.h"
+#include "parsing/parser.h"
 #include "vm.h"
-#include "pretty-printer.h"
+#include "ast/pretty-printer.h"
 
 void print_help() {
     std::cout <<
