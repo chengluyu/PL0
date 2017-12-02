@@ -17,6 +17,6 @@ set(SOURCE_FILES
         src/token.h
         src/util.h
         src/vm.cpp
-        src/vm.h)
+        src/vm.h src/ast.h src/ast.cpp src/pretty-printer.cpp src/pretty-printer.h)
 
 add_executable(PL0 ${SOURCE_FILES})

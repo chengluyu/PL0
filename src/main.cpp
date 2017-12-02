@@ -1,9 +1,9 @@
 #include <fstream>
 #include <iostream>
-#include <cstring>
 
 #include "parser.h"
 #include "vm.h"
+#include "pretty-printer.h"
 
 void print_help() {
     std::cout <<
@@ -48,11 +48,14 @@ int main(int argc, const char* const argv[]) {
     pl0::lexer lex(fin);
     pl0::parser parser(lex);
     try {
-        parser.program();
-    } catch (pl0::general_error error) {
+        auto program = parser.program();
+        pl0::ast::ast_printer printer{std::cout};
+        printer.visit_block(program);
+    } catch (pl0::general_error &error) {
         pl0::location loc = lex.current_location();
         std::cout << "Error(" << loc.to_string() << "): "
                   << error.what() << std::endl;
+        return EXIT_FAILURE;
     }
-    return 0;
+    return EXIT_SUCCESS;
 }

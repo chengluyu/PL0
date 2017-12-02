@@ -3,184 +3,181 @@
 
 namespace pl0 {
 
-void parser::subprogram() {
-    while (lexer_.peek(token::CONST)) constant_decl();
-    while (lexer_.peek(token::VAR)) variable_decl();
-    while (lexer_.peek(token::PROCEDURE)) procedure_decl();
-    statement();
+ast::block * parser::subprogram() {
+    auto constants = lexer_.peek(token::CONST) ? constant_decl() : nullptr;
+    auto variables = lexer_.peek(token::VAR) ? variable_decl() : nullptr;
+    std::vector<ast::procedure_declaration*> sub_methods;
+    while (lexer_.peek(token::PROCEDURE))
+        sub_methods.push_back(procedure_decl());
+    auto body = statement();
+    return new ast::block{top_, variables, constants, std::move(sub_methods), body};
 }
 
 // declarations
-void parser::variable_decl() {
+ast::variable_declaration * parser::variable_decl() {
+    ast::variable_declaration::list_type vars;
     expect(token::VAR);
     do {
-        std::string ident = identifier();
-        top_->define(new variable(ident, top_->get_level(), top_->get_variable_count()));
-    } while(lexer_.match(token::COMMA));
+        std::string id = identifier();
+        auto sym = new variable(id, top_->get_level(), top_->get_variable_count());
+        vars.push_back(sym);
+        top_->define(sym);
+    } while (lexer_.match(token::COMMA));
     expect(token::SEMICOLON);
+    return new ast::variable_declaration{std::move(vars)};
 }
 
-void parser::constant_decl() {
+ast::constant_declaration * parser::constant_decl() {
+    ast::constant_declaration::list_type consts;
     expect(token::CONST);
     do {
-        std::string ident = identifier();
+        std::string id = identifier();
         expect(token::EQ);
-        int num = number();
-        top_->define(new constant(ident, num));
+        auto sym = new constant(id, number());
+        consts.push_back(sym);
+        top_->define(sym);
     } while(lexer_.match(token::COMMA));
     expect(token::SEMICOLON);
+    return new ast::constant_declaration{std::move(consts)};
 }
 
-void parser::procedure_decl() {
+ast::procedure_declaration * parser::procedure_decl() {
     expect(token::PROCEDURE);
-    std::string procname = identifier();
-    auto *proc = new procedure(procname, top_->get_level());
-    top_->define(proc);
+    std::string name = identifier();
+    auto *sym = new procedure(name, top_->get_level());
+    top_->define(sym);
     expect(token::SEMICOLON);
     enter_scope();
-    subprogram();
-    expect(token::SEMICOLON);
+    auto block = subprogram();
     leave_scope();
+    expect(token::SEMICOLON);
+    return new ast::procedure_declaration{sym, block};
 }
 
 // statements
-void parser::statement_block() {
+ast::statement_list * parser::statement_list() {
+    ast::statement_list::list_type statements;
     expect(token::BEGIN);
     do {
-        statement();
+        statements.push_back(statement());
     } while (lexer_.match(token::SEMICOLON));
     expect(token::END);
+    return new ast::statement_list(std::move(statements));
 }
 
-void parser::if_statement() {
+ast::if_statement * parser::if_statement() {
     expect(token::IF);
-    condition();
+    auto cond = condition();
     expect(token::THEN);
-    statement();
-    if (lexer_.match(token::ELSE)) {
-        statement();
-    }
+    auto then = statement();
+    return new ast::if_statement(cond, then, lexer_.match(token::ELSE) ? statement() : nullptr);
 }
 
-void parser::while_statement() {
+ast::while_statement * parser::while_statement() {
     expect(token::WHILE);
-    condition();
+    auto cond = condition();
     expect(token::DO);
-    statement();
+    return new ast::while_statement(cond, statement());
 }
 
-void parser::call_statement() {
+ast::call_statement * parser::call_statement() {
     expect(token::CALL);
     std::string callee = identifier();
     symbol *sym = top_->resolve(callee);
-    if (sym == nullptr) {
-        // This procedure has not been declared yet,
-        // but it may be declared later. We will cope
-        // with this situation in the future version.
-        throw general_error("undeclared procedure \"", callee, '"');
-    } else if (sym->is_procedure()) {
-
+    if (sym == nullptr || sym->is_procedure()) {
+        return new ast::call_statement(std::move(callee));
     } else {
         throw general_error("cannot call non-procedure \"", callee, '"');
     }
 }
 
-void parser::statement() {
+ast::statement * parser::statement() {
     switch (lexer_.peek()) {
-    case token::READ:
-        read_statement();
-        break;
-    case token::WRITE:
-        write_statement();
-        break;
-    case token::IF:
-        if_statement();
-        break;
-    case token::BEGIN:
-        statement_block();
-        break;
-    case token::WHILE:
-        while_statement();
-        break;
-    case token::CALL:
-        call_statement();
-        break;
-    case token::RETURN:
-        return_statement();
-        break;
-    default:
-        assign_statement();
-        break;
+    case token::READ: return read_statement();
+    case token::WRITE: return write_statement();
+    case token::IF: return if_statement();
+    case token::BEGIN: return statement_list();
+    case token::WHILE: return while_statement();
+    case token::CALL: return call_statement();
+    case token::RETURN: return return_statement();
+    default: return assign_statement();
     }
 }
 
-void parser::read_statement() {
+ast::read_statement * parser::read_statement() {
+    ast::read_statement::list_type targets_;
     expect(token::READ);
     do {
-        variable *var = lvalue();
+        targets_.push_back(local_variable());
     } while (lexer_.match(token::COMMA));
+    return new ast::read_statement(targets_);
 }
 
-void parser::write_statement() {
+ast::write_statement * parser::write_statement() {
+    ast::write_statement::list_type expressions_;
     expect(token::WRITE);
     do {
-        expression();
+        expressions_.push_back(expression());
     } while (lexer_.match(token::COMMA));
+    return new ast::write_statement {expressions_};
 }
 
-void parser::assign_statement() {
-    variable *var = lvalue();
+ast::assign_statement * parser::assign_statement() {
+    auto var = local_variable();
     expect(token::ASSIGN);
-    expression();
+    return new ast::assign_statement {var, expression()};
 }
 
-void parser::return_statement() {
+ast::return_statement * parser::return_statement() {
     expect(token::RETURN);
+    return new ast::return_statement {};
 }
 
 // expressions
-variable *parser::lvalue() {
+ast::variable_proxy * parser::local_variable() {
     std::string id = identifier();
     symbol *sym = top_->resolve(id);
     if (sym == nullptr) {
         throw general_error("undeclared identifier \"", id, '"');
     } else if (sym->is_variable()) {
-        return dynamic_cast<variable*>(sym);
+        return new ast::variable_proxy(dynamic_cast<variable*>(sym));
     } else {
         throw general_error("cannot assign value to a non-variable \"", id, '"');
     }
 }
 
-void parser::condition() {
+ast::expression * parser::condition() {
     if (lexer_.match(token::ODD)) {
-        expression();
+        return new ast::unary_operation(token::ODD, expression());
     } else {
-        expression();
+        auto left = expression();
         token cmp_op = lexer_.next();
         if (!is_compare_operator(cmp_op)) {
             throw general_error("expect a compare operator instead of ", *cmp_op);
         }
-        expression();
+        return new ast::binary_operation(cmp_op, left, expression());
     }
 }
 
-void parser::expression() {
-    term();
+ast::expression * parser::expression() {
+    auto lhs = term();
     while (lexer_.peek(token::MUL) || lexer_.peek(token::DIV)) {
         token op = lexer_.next();
-        term();
+        lhs = new ast::binary_operation(op, lhs, term());
     }
+    return lhs;
 }
 
-void parser::term() {
-    factor();
+ast::expression * parser::term() {
+    auto lhs = factor();
     while (lexer_.peek(token::ADD) || lexer_.peek(token::SUB)) {
         token op = lexer_.next();
-        factor();
+        lhs = new ast::binary_operation(op, lhs, factor());
     }
+    return lhs;
 }
 
-void parser::factor() {
+ast::expression * parser::factor() {
     if (lexer_.peek(token::IDENTIFIER)) {
         std::string id = lexer_.get_literal();
         lexer_.advance();
@@ -189,17 +186,19 @@ void parser::factor() {
             throw general_error("undeclared identifier \"", id, '"');
         } else if (sym->is_variable()) {
             auto *var = dynamic_cast<variable*>(sym);
+            return new ast::variable_proxy(var);
         } else if (sym->is_constant()) {
             auto *cons = dynamic_cast<constant*>(sym);
+            return new ast::literal(cons->get_value());
         } else {
             throw general_error("procedure cannot be used in expression");
         }
     } else if (lexer_.peek(token::NUMBER)) {
-        std::string num = lexer_.get_literal();
-        lexer_.advance();
+        return new ast::literal(number());
     } else if (lexer_.match(token::LPAREN)) {
-        expression();
+        auto expr = expression();
         expect(token::RPAREN);
+        return expr;
     } else {
         throw general_error("expect an identifier, a number or a expression instead of ", *lexer_.peek());
     }
@@ -207,12 +206,13 @@ void parser::factor() {
 
 parser::parser(lexer & lexer) : lexer_(lexer), top_(nullptr) { }
 
-void parser::program() {
+ast::block * parser::program() {
     enter_scope();
-    subprogram();
+    auto block = subprogram();
+    leave_scope();
     expect(token::PERIOD);
     expect(token::EOS);
-    leave_scope();
+    return block;
 }
 
 void parser::enter_scope() {
@@ -222,13 +222,10 @@ void parser::enter_scope() {
 void parser::leave_scope() {
     scope *inner = top_;
     top_ = top_->get_enclosing_scope();
-    delete inner;
 }
 
 void parser::expect(token tk) {
-    if (lexer_.peek(tk))
-        lexer_.advance();
-    else
+    if (!lexer_.match(tk))
         throw general_error("expect ", *tk, " instead of ", *lexer_.peek());
 }
 
@@ -236,7 +233,7 @@ std::string parser::identifier() {
     if (lexer_.peek(token::IDENTIFIER)) {
         std::string result = lexer_.get_literal();
         lexer_.advance();
-        return result;
+        return std::move(result);
     }
     throw general_error("expect an identifier instead of ", *lexer_.peek());
 }

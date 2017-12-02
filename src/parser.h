@@ -4,6 +4,7 @@
 #include "lexer.h"
 #include "scope.h"
 #include "assembler.h"
+#include "ast.h"
 
 namespace pl0 {
 
@@ -14,36 +15,36 @@ class parser {
     // scope control
     void enter_scope();
     void leave_scope();
-    
+
     // lexical helper functions
     void expect(token tk);
     std::string identifier();
     int number();
 
-    void subprogram();
+    ast::block * subprogram();
     // declarations
-    void variable_decl();
-    void constant_decl();
-    void procedure_decl();
+    ast::variable_declaration * variable_decl();
+    ast::constant_declaration * constant_decl();
+    ast::procedure_declaration * procedure_decl();
     // statements
-    void statement_block();
-    void if_statement();
-    void while_statement();
-    void call_statement();
-    void statement();
-    void read_statement();
-    void write_statement();
-    void assign_statement();
-    void return_statement();
+    ast::statement_list * statement_list();
+    ast::if_statement * if_statement();
+    ast::while_statement * while_statement();
+    ast::call_statement * call_statement();
+    ast::statement * statement();
+    ast::read_statement * read_statement();
+    ast::write_statement * write_statement();
+    ast::assign_statement * assign_statement();
+    ast::return_statement * return_statement();
     // expressions
-    variable *lvalue();
-    void condition();
-    void expression();
-    void term();
-    void factor();
+    ast::variable_proxy * local_variable();
+    ast::expression * condition();
+    ast::expression * expression();
+    ast::expression * term();
+    ast::expression * factor();
 public:
     explicit parser(lexer &lex);
-    void program();
+    ast::block * program();
 };
 
 }
