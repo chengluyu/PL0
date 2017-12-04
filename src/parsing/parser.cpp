@@ -182,17 +182,9 @@ ast::expression * parser::factor() {
         std::string id = lexer_.get_literal();
         lexer_.advance();
         symbol *sym = top_->resolve(id);
-        if (sym == nullptr) {
+        if (sym == nullptr)
             throw general_error("undeclared identifier \"", id, '"');
-        } else if (sym->is_variable()) {
-            auto *var = dynamic_cast<variable*>(sym);
-            return new ast::variable_proxy(var);
-        } else if (sym->is_constant()) {
-            auto *cons = dynamic_cast<constant*>(sym);
-            return new ast::literal(cons->get_value());
-        } else {
-            throw general_error("procedure cannot be used in expression");
-        }
+        return new ast::variable_proxy{sym};
     } else if (lexer_.peek(token::NUMBER)) {
         return new ast::literal(number());
     } else if (lexer_.match(token::LPAREN)) {

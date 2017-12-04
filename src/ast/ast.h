@@ -320,9 +320,9 @@ public:
 };
 
 class variable_proxy : public expression {
-    variable *target_;
+    symbol *target_;
 public:
-    explicit variable_proxy(variable *target)
+    explicit variable_proxy(symbol *target)
             : expression(ast_node_type::variable_proxy), target_(target) { }
 
     ~variable_proxy() final = default; // TODO add a proper destructor here

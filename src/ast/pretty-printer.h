@@ -18,27 +18,25 @@ class ast_printer : public ast_visitor<ast_printer> {
         indent_level_ += indent_size_;
     }
 
-    void decrease_indent() {
-        indent_level_ -= indent_size_;
-    }
-
     void write_indent() {
         for (int i = 0; i < indent_level_; i++)
             out_.put(' ');
     }
 
-    void newline() {
+    void end_line() {
         out_.put('\n');
         write_indent();
     }
 
-    void increase_indent_and_newline() {
+    void begin_block() {
         indent_level_ += indent_size_;
-        newline();
+        out_ << " {";
     }
 
-    void decrease_indent_and_newline() {
+    void end_block() {
         indent_level_ -= indent_size_;
+        end_line();
+        out_ << "}";
     }
 
 public:

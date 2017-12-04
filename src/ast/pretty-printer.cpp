@@ -20,9 +20,10 @@ void ast_printer::visit_variable_declaration(variable_declaration *node) {
 
 void ast_printer::visit_procedure_declaration(procedure_declaration *node) {
     out_ << "procedure declaration";
-    increase_indent_and_newline();
+    begin_block();
+    end_line();
     visit_block(node->main_block());
-    decrease_indent_and_newline();
+    end_block();
 }
 
 // statement visitor methods
@@ -30,40 +31,43 @@ void ast_printer::visit_procedure_declaration(procedure_declaration *node) {
 void ast_printer::visit_assign_statement(assign_statement *node) {
     // assign statement {
     out_ << "assign statement";
-    increase_indent_and_newline();
+    begin_block();
+    end_line();
     out_ << "target = ";
     visit_variable_proxy(node->target());
     // expression =
-    newline();
+    end_line();
     visit(node->expr());
-    decrease_indent_and_newline();
+    end_block();
 }
 
 void ast_printer::visit_if_statement(if_statement *node) {
     out_ << "while";
-    increase_indent_and_newline();
+    begin_block();
+    end_line();
     out_ << "condition = ";
     visit(node->condition());
-    newline();
+    end_line();
     out_ << "consequence = ";
     visit(node->then_statement());
     if (node->has_else_statement()) {
-        newline();
+        end_line();
         out_ << "alternation = ";
         visit(node->else_statement());
     }
-    decrease_indent_and_newline();
+    end_block();
 }
 
 void ast_printer::visit_while_statement(while_statement *node) {
     out_ << "while";
-    increase_indent_and_newline();
+    begin_block();
+    end_line();
     out_ << "condition = ";
     visit(node->cond());
-    newline();
+    end_line();
     out_ << "body = ";
     visit(node->body());
-    decrease_indent_and_newline();
+    end_block();
 }
 
 void ast_printer::visit_call_statement(call_statement *node) {
@@ -72,41 +76,45 @@ void ast_printer::visit_call_statement(call_statement *node) {
 
 void ast_printer::visit_block(block *node) {
     out_ << "block";
-    increase_indent_and_newline();
+    begin_block();
+    end_line();
     if (node->var_declaration()) {
         out_ << "variables = ";
         visit_variable_declaration(node->var_declaration());
-        newline();
+        end_line();
     }
     if (node->const_declaration()) {
         out_ << "constants = ";
         visit_constant_declaration(node->const_declaration());
-        newline();
+        end_line();
     }
-    auto methods = node->sub_procedures();
-    if (!methods.empty()) {
-        out_ << "procedures";
-        increase_indent_and_newline();
-        for (size_t i = 0; i < methods.size(); i++) {
-            visit_procedure_declaration(methods[i]);
-            if (i + 1 < methods.size()) newline();
+    if (!node->sub_procedures().empty()) {
+        out_ << "procedures:";
+        begin_block();
+        int index = 0;
+        for (auto method : node->sub_procedures()) {
+            end_line();
+            out_ << '[' << index++ << "] = ";
+            visit_procedure_declaration(method);
         }
-        decrease_indent_and_newline();
+        end_block();
+        end_line();
     }
-    newline();
     out_ << "body = ";
     visit(node->body());
-    decrease_indent_and_newline();
+    end_block();
 }
 
 void ast_printer::visit_statement_list(statement_list *node) {
     out_ << "statement list";
     increase_indent();
+    int index = 0;
     for (auto statement : node->statements()) {
-        newline();
+        end_line();
+        out_ << '[' << index++ << "] = ";
         visit(statement);
     }
-    decrease_indent_and_newline();
+    end_block();
 }
 
 void ast_printer::visit_read_statement(read_statement *node) {
@@ -125,31 +133,41 @@ void ast_printer::visit_return_statement(return_statement *node) {
 
 void ast_printer::visit_unary_operation(unary_operation *node) {
     out_ << "unary operation";
-    increase_indent_and_newline();
+    begin_block();
+    end_line();
     out_ << "operator = " << *node->op();
-    newline();
+    end_line();
     out_ << "expression = ";
     visit(node->expr());
-    decrease_indent_and_newline();
+    end_block();
 }
 
 void ast_printer::visit_binary_operation(binary_operation *node) {
     // binary operation {
     out_ << "binary operation";
-    increase_indent_and_newline();
+    begin_block();
+    end_line();
     // operator =
     out_ << "operator = '" << *node->op() << '\'';
-    newline();
+    end_line();
     out_ << "left = ";
     visit(node->left());
-    newline();
+    end_line();
     out_ << "right = ";
     visit(node->right());
-    decrease_indent_and_newline();
+    end_block();
 }
 
 void ast_printer::visit_variable_proxy(variable_proxy *node) {
-    out_ << "variable " << node->target()->get_name();
+    symbol *sym = node->target();
+    if (sym->is_constant()) {
+        out_ << "constant ";
+    } else if (sym->is_variable()) {
+        out_ << "variable ";
+    } else if (sym->is_procedure()) {
+        out_ << "procedure ";
+    }
+    out_ << node->target()->get_name();
 }
 
 void ast_printer::visit_literal(literal *node) {
