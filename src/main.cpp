@@ -4,6 +4,7 @@
 #include "parsing/parser.h"
 #include "vm.h"
 #include "ast/pretty-printer.h"
+#include "ast/dot-generator.h"
 
 void print_help() {
     std::cout <<
@@ -50,7 +51,10 @@ int main(int argc, const char* const argv[]) {
     try {
         auto program = parser.program();
         pl0::ast::ast_printer printer{std::cout};
+        pl0::ast::dot_generator drawer;
         printer.visit_block(program);
+        drawer.generate(program);
+        drawer.save_to_file("test.txt");
     } catch (pl0::general_error &error) {
         pl0::location loc = lex.current_location();
         std::cout << "Error(" << loc.to_string() << "): "

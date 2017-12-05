@@ -17,6 +17,6 @@ set(SOURCE_FILES
         src/parsing/token.h
         src/util.h
         src/vm.cpp
-        src/vm.h src/ast/ast.h src/ast/ast.cpp src/ast/pretty-printer.cpp src/ast/pretty-printer.h)
+        src/vm.h src/ast/ast.h src/ast/ast.cpp src/ast/pretty-printer.cpp src/ast/pretty-printer.h src/ast/dot-generator.cpp src/ast/dot-generator.h src/code-generator.cpp src/code-generator.h)
 
 add_executable(PL0 ${SOURCE_FILES})
