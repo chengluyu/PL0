@@ -354,14 +354,14 @@ public:
 };
 
 #define DECLARE_VISIT(type) \
-    void visit_##type(type *node);
+    void visit_##type(ast::type *node);
 
 #define DECLARE_VISIT_METHODS \
     AST_NODE_LIST(DECLARE_VISIT)
 
 #define GENERATE_VISIT_CASE(type) \
-    case ast_node_type::type: \
-        return this->impl()->visit_##type(dynamic_cast<type*>(node));
+    case ast::ast_node_type::type: \
+        return this->impl()->visit_##type(dynamic_cast<ast::type*>(node));
 
 #define GENERATE_AST_VISITOR_SWITCH() \
     switch(node->get_type()) { \
@@ -369,7 +369,7 @@ public:
     }
 
 #define DEFINE_AST_VISITOR_SUBCLASS_MEMBERS() \
-    void visit(ast_node *node) { \
+    void visit(ast::ast_node *node) { \
         GENERATE_AST_VISITOR_SWITCH() \
     }
 

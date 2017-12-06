@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "parsing/token.h"
+#include "../parsing/token.h"
 
 namespace pl0 {
 

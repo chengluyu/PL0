@@ -1,4 +1,4 @@
-#include "assembler.h"
+#include "bytecode/assembler.h"
 
 #define IGNORE 0
 

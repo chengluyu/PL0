@@ -5,6 +5,7 @@
 #include "vm.h"
 #include "ast/pretty-printer.h"
 #include "ast/dot-generator.h"
+#include "bytecode/code-generator.h"
 
 void print_help() {
     std::cout <<
@@ -50,11 +51,14 @@ int main(int argc, const char* const argv[]) {
     pl0::parser parser(lex);
     try {
         auto program = parser.program();
-        pl0::ast::ast_printer printer{std::cout};
+//        pl0::ast::ast_printer printer{std::cout};
+//        printer.visit_block(program);
         pl0::ast::dot_generator drawer;
-        printer.visit_block(program);
         drawer.generate(program);
         drawer.save_to_file("test.txt");
+        pl0::code::generator compiler{};
+        compiler.generate(program);
+        print_bytecode(compiler.code());
     } catch (pl0::general_error &error) {
         pl0::location loc = lex.current_location();
         std::cout << "Error(" << loc.to_string() << "): "

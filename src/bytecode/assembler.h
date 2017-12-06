@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "bytecode.h"
-#include "util.h"
+#include "../util.h"
 
 namespace pl0 {
 
