@@ -52,23 +52,23 @@ The instruction consists of three parts: opcode, level, address. There are seven
 7. `JPC`: If the value at top of evaluation is falsy (i.e. zero), jump to the address given in address field. The level field is unused.
 8. `OPR`: Do the operation decided by the address field.
 
-## Implementation Details
+## Implementation
 
-### The Tokenizer
-
+<details><summary>Tokenizer</summary><br>
 The tokenizer are written from scratch. Tokens are represented by a pair.
+</details>
 
-### The Parser and Symbol Table
-
+<details><summary>The Parser and Symbol Table</summary><br>
 This implementation uses a LL(1) parser. Uses a nested symbol table to maintain symbols.
+</details>
 
-### Code Generation
-
+<details><summary>Code Generation</summary><br>
 Since the parser is required to generate byte codes directly. A helper class `Assembler` is introduced, by which the parser can generate instructions and refill instructions easily.
+</details>
 
-### The Virtual Machine (The Simulator)
-
+<details><summary>The Virtual Machine (The Simulator)</summary><br>
 The simulator does not adopt a single-stack design. Instead, the runtime stack is composed of many discrete stack frame.
+</details>
 
 ## Current Status
 
