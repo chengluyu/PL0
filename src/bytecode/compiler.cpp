@@ -1,17 +1,17 @@
-#include "code-generator.h"
+#include "compiler.h"
 
 namespace pl0::code {
 
-void generator::visit_variable_declaration(ast::variable_declaration *node) { }
+void compiler::visit_variable_declaration(ast::variable_declaration *node) { }
 
-void generator::visit_constant_declaration(ast::constant_declaration *node) { }
+void compiler::visit_constant_declaration(ast::constant_declaration *node) { }
 
-void generator::visit_procedure_declaration(ast::procedure_declaration *node) {
+void compiler::visit_procedure_declaration(ast::procedure_declaration *node) {
     entry_points_[node->symbol()] = assembler_.get_next_address();
     visit_block(node->main_block());
 }
 
-void generator::visit_block(ast::block *node) {
+void compiler::visit_block(ast::block *node) {
     top_scope_ = node->belonging_scope();
     assembler_.enter(top_scope_->get_variable_count() + 3);
     visit(node->body());
@@ -21,26 +21,26 @@ void generator::visit_block(ast::block *node) {
     top_scope_ = top_scope_->get_enclosing_scope();
 }
 
-void generator::visit_unary_operation(ast::unary_operation *node) {
+void compiler::visit_unary_operation(ast::unary_operation *node) {
     visit(node->expr());
     assembler_.operation(node->op());
 }
 
-void generator::visit_binary_operation(ast::binary_operation *node) {
+void compiler::visit_binary_operation(ast::binary_operation *node) {
     visit(node->left());
     visit(node->right());
     assembler_.operation(node->op());
 }
 
-void generator::visit_literal(ast::literal *node) {
+void compiler::visit_literal(ast::literal *node) {
     assembler_.load(node->value());
 }
 
-void generator::visit_variable_proxy(ast::variable_proxy *node) {
+void compiler::visit_variable_proxy(ast::variable_proxy *node) {
     visit_rvalue(node);
 }
 
-void generator::visit_lvalue(ast::variable_proxy *node) {
+void compiler::visit_lvalue(ast::variable_proxy *node) {
     auto sym = node->target();
     if (sym->is_variable()) {
         auto var = dynamic_cast<variable *>(sym);
@@ -51,7 +51,7 @@ void generator::visit_lvalue(ast::variable_proxy *node) {
         throw general_error("procedure " + sym->get_name() + " is not assignable");
 }
 
-void generator::visit_rvalue(ast::variable_proxy *node) {
+void compiler::visit_rvalue(ast::variable_proxy *node) {
     auto sym = node->target();
     if (sym->is_variable()) {
         auto var = dynamic_cast<variable *>(sym);
@@ -63,12 +63,12 @@ void generator::visit_rvalue(ast::variable_proxy *node) {
         throw general_error(sym->get_name() + " is a procedure so that cannot be used in expression");
 }
 
-void generator::visit_assign_statement(ast::assign_statement *node) {
+void compiler::visit_assign_statement(ast::assign_statement *node) {
     visit(node->expr());
     visit_lvalue(node->target());
 }
 
-void generator::visit_call_statement(ast::call_statement *node) {
+void compiler::visit_call_statement(ast::call_statement *node) {
     auto sym = top_scope_->resolve(node->callee());
     if (sym == nullptr) throw general_error("no procedure named \"" + node->callee() + "\" to be called");
     if (!sym->is_procedure()) throw general_error(node->callee() + " is not a procedure");
@@ -76,14 +76,14 @@ void generator::visit_call_statement(ast::call_statement *node) {
     patch_list_[method].push_back(assembler_.call(top_scope_->get_level()));
 }
 
-void generator::visit_write_statement(ast::write_statement *node) {
+void compiler::visit_write_statement(ast::write_statement *node) {
     for (auto expr : node->expressions()) {
         visit(expr);
         assembler_.write();
     }
 }
 
-void generator::visit_while_statement(ast::while_statement *node) {
+void compiler::visit_while_statement(ast::while_statement *node) {
     auto beginning = assembler_.get_next_address();
     visit(node->cond());
     auto goto_end = assembler_.branch_if_false();
@@ -92,18 +92,18 @@ void generator::visit_while_statement(ast::while_statement *node) {
     goto_end.set_address(assembler_.get_next_address());
 }
 
-void generator::visit_return_statement(ast::return_statement *node) {
+void compiler::visit_return_statement(ast::return_statement *node) {
     assembler_.leave();
 }
 
-void generator::visit_read_statement(ast::read_statement *node) {
+void compiler::visit_read_statement(ast::read_statement *node) {
     for (auto var : node->targets()) {
         assembler_.read();
         visit_lvalue(var);
     }
 }
 
-void generator::visit_if_statement(ast::if_statement *node) {
+void compiler::visit_if_statement(ast::if_statement *node) {
     visit(node->condition());
     if (node->has_else_statement()) {
         auto goto_else = assembler_.branch_if_false();
@@ -119,12 +119,12 @@ void generator::visit_if_statement(ast::if_statement *node) {
     }
 }
 
-void generator::visit_statement_list(ast::statement_list *node) {
+void compiler::visit_statement_list(ast::statement_list *node) {
     for (auto stmt : node->statements())
         visit(stmt);
 }
 
-void generator::generate(ast::block *program) {
+void compiler::generate(ast::block *program) {
     visit_block(program);
     for (auto kv : patch_list_) {
         for (auto patch : kv.second) {

@@ -11,7 +11,7 @@
 
 namespace pl0::code {
 
-class generator : public ast::ast_visitor<generator> {
+class compiler : public ast::ast_visitor<compiler> {
     std::unordered_map<procedure *, int> entry_points_;
     std::unordered_map<procedure *, std::vector<backpatcher>> patch_list_;
     assembler assembler_;
@@ -23,7 +23,7 @@ class generator : public ast::ast_visitor<generator> {
     void visit_rvalue(ast::variable_proxy *node);
     void visit_lvalue(ast::variable_proxy *node);
 public:
-    generator() : top_scope_(nullptr) { }
+    compiler() : top_scope_(nullptr) { }
 
     void generate(ast::block *program);
 

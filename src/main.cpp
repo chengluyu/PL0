@@ -5,7 +5,7 @@
 #include "vm.h"
 #include "ast/pretty-printer.h"
 #include "ast/dot-generator.h"
-#include "bytecode/code-generator.h"
+#include "bytecode/compiler.h"
 
 void print_help() {
     std::cout <<
@@ -56,7 +56,7 @@ int main(int argc, const char* const argv[]) {
         pl0::ast::dot_generator drawer;
         drawer.generate(program);
         drawer.save_to_file("test.txt");
-        pl0::code::generator compiler{};
+        pl0::code::compiler compiler{};
         compiler.generate(program);
         print_bytecode(compiler.code());
         pl0::execute(compiler.code());
