@@ -4,7 +4,7 @@ project(PL0)
 set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCE_FILES
-        src/assembler.cpp
+        src/bytecode/assembler.cpp
         src/bytecode/assembler.h
         src/bytecode/bytecode.h
         src/parsing/lexer.cpp
