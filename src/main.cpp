@@ -59,6 +59,7 @@ int main(int argc, const char* const argv[]) {
         pl0::code::generator compiler{};
         compiler.generate(program);
         print_bytecode(compiler.code());
+        pl0::execute(compiler.code());
     } catch (pl0::general_error &error) {
         pl0::location loc = lex.current_location();
         std::cout << "Error(" << loc.to_string() << "): "

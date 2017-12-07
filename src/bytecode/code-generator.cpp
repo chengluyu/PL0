@@ -13,7 +13,7 @@ void generator::visit_procedure_declaration(ast::procedure_declaration *node) {
 
 void generator::visit_block(ast::block *node) {
     top_scope_ = node->belonging_scope();
-    assembler_.enter(top_scope_->get_variable_count());
+    assembler_.enter(top_scope_->get_variable_count() + 3);
     visit(node->body());
     assembler_.leave();
     for (auto method : node->sub_procedures())
