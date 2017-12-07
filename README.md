@@ -2,6 +2,8 @@
 
 ## Introduction
 
+**For the old Python 3 version, please see [here](https://github.com/chengluyu/PL0/tree/python3).**
+
 This repository holds my implementation of PL/0 language interpreter. This project is intended for the experiment of my compiler theory course in my university.
 
 You can see the full grammar (written in BNF) of common PL/0 language at [Wikipedia](https://en.wikipedia.org/wiki/PL/0). However, the implementation in this repository is slightly different from the common one. This is mainly because the experiment introduces more requirements at the base of the original version, which is listed below:
