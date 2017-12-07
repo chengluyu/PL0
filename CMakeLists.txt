@@ -42,6 +42,6 @@ set(SOURCE_FILES
         src/main.cpp
         src/util.h
         src/vm.cpp
-        src/vm.h)
+        src/vm.h src/argparser.h)
 
 add_executable(PL0 ${SOURCE_FILES})

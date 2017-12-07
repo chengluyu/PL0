@@ -3,19 +3,12 @@
 
 #include "parsing/parser.h"
 #include "vm.h"
+#include "ast/ast.h"
 #include "ast/pretty-printer.h"
 #include "ast/dot-generator.h"
 #include "bytecode/compiler.h"
+#include "argparser.h"
 
-void print_help() {
-    std::cout <<
-        "\n"
-        "Usage: pl0 [options] filename\n"
-        "\n"
-        "  --help           : Show this message and exit.\n"
-        "  --print-bytecode : Print bytecode after code generation.\n"
-        ;
-}
 
 void print_bytecode(const pl0::bytecode &code) {
     for (size_t i = 0; i < code.size(); i++) {
@@ -24,47 +17,77 @@ void print_bytecode(const pl0::bytecode &code) {
     }
 }
 
-int main(int argc, const char* const argv[]) {
-    if (argc < 2 || argv[1] == std::string { "--help" }) {
-        print_help();
-        return 0;
-    }
-    int filename_index = 1;
+struct options {
     bool show_bytecode = false;
-    // check if there is any options
-    if (argv[filename_index] == std::string { "--print-bytecode" }) {
-        filename_index++;
-        show_bytecode = true;
+    bool compile_only = false;
+    bool show_ast = false;
+    std::string output_graph_file = "";
+    std::string input_file = "";
+};
+
+options parse_args(int argc, const char *argv[]) {
+    try {
+        options option;
+        std::vector<std::string> rest;
+        pl0::argument_parser<options> parser{"The PL/0 compiler"};
+        parser.flags({"--show-bytecode", "-s"}, &options::show_bytecode);
+        parser.flags({"--compile-only", "-c"}, &options::compile_only);
+        parser.flags({"--show-ast", "-t"}, &options::show_ast);
+        parser.store<std::initializer_list<const char *>>({"--plot-tree", "-t"}, &options::output_graph_file);
+        parser.parse(argc, argv, option, rest);
+
+        if (rest.empty())
+            parser.show_help();
+
+        option.input_file = rest[0];
+        return option;
+    } catch (pl0::basic_error &error) {
+        std::cout << "Error: " << error.what() << '\n';
+        exit(EXIT_FAILURE);
     }
-    if (filename_index == argc) {
-        std::cerr << "Error: expect filename after options.\n";
-        print_help();
-        return 1;
-    }
-    // compile and run the code
-    std::ifstream fin(argv[filename_index]);
+}
+
+int main(int argc, const char* argv[]) {
+    options option = parse_args(argc, argv);
+
+    std::ifstream fin(option.input_file);
     if (fin.fail()) {
-        std::cerr << "Error: failed to open file: \"" << argv[1] << "\"\n";
+        std::cerr << "Error: failed to open file: \"" << option.input_file << "\"\n";
         return 1;
     }
+
     pl0::lexer lex(fin);
     pl0::parser parser(lex);
+    pl0::ast::block *program = nullptr;
+
     try {
-        auto program = parser.program();
-//        pl0::ast::ast_printer printer{std::cout};
-//        printer.visit_block(program);
-        pl0::ast::dot_generator drawer;
-        drawer.generate(program);
-        drawer.save_to_file("test.txt");
-        pl0::code::compiler compiler{};
-        compiler.generate(program);
-        print_bytecode(compiler.code());
-        pl0::execute(compiler.code());
+        program = parser.program();
     } catch (pl0::general_error &error) {
         pl0::location loc = lex.current_location();
-        std::cout << "Error(" << loc.to_string() << "): "
-                  << error.what() << std::endl;
+        std::cout << "Error(" << loc.to_string() << "): " << error.what() << '\n';
         return EXIT_FAILURE;
     }
+
+
+    pl0::code::compiler compiler{};
+    compiler.generate(program);
+
+    if (!option.output_graph_file.empty()) {
+        pl0::ast::dot_generator plotter;
+        plotter.generate(program);
+        plotter.save_to_file(option.output_graph_file.c_str());
+    }
+
+    if (option.show_ast) {
+        pl0::ast::ast_printer printer{std::cout};
+        printer.visit_block(program);
+    }
+
+    if (option.show_bytecode)
+        print_bytecode(compiler.code());
+
+    if (!option.compile_only)
+        pl0::execute(compiler.code());
+
     return EXIT_SUCCESS;
 }
