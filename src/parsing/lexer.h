@@ -4,19 +4,9 @@
 #include <istream>
 
 #include "token.h"
+#include "../util.h"
 
 namespace pl0 {
-
-class location {
-    int line_;
-    int column_;
-public:
-    location(int line, int column) : line_(line), column_(column) { }
-
-    std::string to_string() const {
-        return std::to_string(line_) + ':' + std::to_string(column_);
-    }
-};
 
 class lexer {
     std::istream &input_stream_;
