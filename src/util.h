@@ -52,7 +52,7 @@ inline std::string concat(Args ... args) {
 template <typename ... Args>
 inline std::string concat(Args ... args) {
     std::ostringstream oss;
-    oss << ... << args;
+    (oss << ... << args);
     return oss.str();
 }
 
