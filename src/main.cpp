@@ -19,6 +19,7 @@ void print_bytecode(const pl0::bytecode &code) {
 
 struct options {
     bool show_bytecode = false;
+    bool show_tokens = false;
     bool compile_only = false;
     bool show_ast = false;
     std::string output_graph_file = "";
@@ -31,6 +32,7 @@ options parse_args(int argc, const char *argv[]) {
         std::vector<std::string> rest;
         pl0::argument_parser<options> parser{"The PL/0 compiler"};
         parser.flags({"--show-bytecode", "-s"}, &options::show_bytecode);
+        parser.flags({"--show-tokens", "-l"}, &options::show_tokens);
         parser.flags({"--compile-only", "-c"}, &options::compile_only);
         parser.flags({"--show-ast", "-t"}, &options::show_ast);
         parser.store<std::initializer_list<const char *>>({"--plot-tree", "-t"}, &options::output_graph_file);
@@ -47,6 +49,17 @@ options parse_args(int argc, const char *argv[]) {
     }
 }
 
+[[noreturn]] void print_tokens(pl0::lexer &lex) {
+    while (true) {
+        auto token = lex.peek();
+        std::cout << lex.current_location().to_string() << '\t' << *token << '\t' << lex.get_literal() << '\n';
+        if (token == pl0::token::EOS)
+            break;
+        lex.advance();
+    }
+    exit(EXIT_SUCCESS);
+}
+
 int main(int argc, const char* argv[]) {
     options option = parse_args(argc, argv);
 
@@ -57,6 +70,10 @@ int main(int argc, const char* argv[]) {
     }
 
     pl0::lexer lex(fin);
+
+    if (option.show_tokens)
+        print_tokens(lex);
+
     pl0::parser parser(lex);
     pl0::ast::block *program = nullptr;
 
