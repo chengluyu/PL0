@@ -30,12 +30,15 @@ options parse_args(int argc, const char *argv[]) {
     try {
         options option;
         std::vector<std::string> rest;
-        pl0::argument_parser<options> parser{"The PL/0 compiler"};
-        parser.flags({"--show-bytecode", "-s"}, &options::show_bytecode);
-        parser.flags({"--show-tokens", "-l"}, &options::show_tokens);
-        parser.flags({"--compile-only", "-c"}, &options::compile_only);
-        parser.flags({"--show-ast", "-t"}, &options::show_ast);
-        parser.store<std::initializer_list<const char *>>({"--plot-tree", "-t"}, &options::output_graph_file);
+        pl0::argument_parser<options> parser{"Yet Another PL/0 Interpreter"};
+        parser.flags({"--show-bytecode", "-s"}, "Print bytecode after code generation", &options::show_bytecode);
+        parser.flags({"--show-tokens", "-l"}, "Print all tokens.", &options::show_tokens);
+        parser.flags({"--compile-only", "-c"}, "If specified, bytecode will not be executed.", &options::compile_only);
+        parser.flags({"--show-ast", "-t"}, "Print abstract syntax tree.", &options::show_ast);
+        parser.store<std::initializer_list<const char *>>(
+                {"--plot-tree", "-t"},
+                "If specified, the GraphViz representation of abstract syntax tree will be output to file.",
+                &options::output_graph_file);
         parser.parse(argc, argv, option, rest);
 
         if (rest.empty())
