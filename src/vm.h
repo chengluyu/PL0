@@ -1,6 +1,8 @@
 #ifndef PL_ZERO_VM_H
 #define PL_ZERO_VM_H
 
+#include <functional>
+
 #include "bytecode/bytecode.h"
 
 namespace pl0 {
