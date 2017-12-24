@@ -1,105 +1,61 @@
 #include <cassert>
 #include <functional>
 #include <iostream>
-#include <type_traits>
 #include <unordered_map>
 
 #include "vm.h"
 
-const int STACK_SIZE = 1024;
-
-enum offset {
-    /* offset to return address */          return_address,
-    /* base pointer of enclosing frame */   enclosing_frame,
-    /* base pointer of declaration frame */ declaration_frame,
-    /* offset to local variables */         local
-};
-
 void pl0::execute(const bytecode & code) {
-    int pc = 0;
-    int *stack = new int[STACK_SIZE];
-    int bp = 0;
-    int sp = bp;
+    int program_counter = 0;
+    auto code_length = static_cast<int>(code.size());
+    auto *top_frame = new stack_frame{ code_length, nullptr, nullptr };
 
-    const std::unordered_map<opt, std::function<int(int, int)>> bifunctors = {
-        { opt::ADD, std::plus<int>() },
-        { opt::SUB, std::minus<int>() },
-        { opt::DIV, std::divides<int>() },
-        { opt::MUL, std::multiplies<int>() },
-        { opt::LE, std::less<int>() },
-        { opt::LEQ, std::less_equal<int>() },
-        { opt::GE, std::greater<int>() },
-        { opt::GEQ, std::greater_equal<int>() },
-        { opt::EQ, std::equal_to<int>() },
-        { opt::NEQ, std::not_equal_to<int>() }
-    };
-
-    int codelen = static_cast<int>(code.size());
-    stack[bp + offset::return_address] = codelen;
-
-    while (pc < codelen) {
-        const instruction &ins = code[pc];
-        pc++;
-
-        /* get bp of the frame whose distance from current frame is given */
-        auto resolve = [&]() -> int {
-            int fp = bp, dist = ins.level;
-            while (dist > 0) {
-                fp = stack[fp + offset::declaration_frame];
-                dist--;
-            }
-            return fp;
-        };
+    while (program_counter < code_length) {
+        auto ins = code[program_counter++];
 
         switch (ins.op) {
         case opcode::LIT:
-            stack[++sp] = ins.address;
+            top_frame->push(ins.address);
             break;
         case opcode::LOD:
-            stack[++sp] = stack[resolve() + offset::local + ins.address];
+            top_frame->push(top_frame->local(ins.level, ins.address));
             break;
         case opcode::STO:
-            stack[resolve() + offset::local + ins.address] = stack[sp--];
+            top_frame->local(ins.level, ins.address) = top_frame->pop();
             break;
         case opcode::CAL:
-            // save context
-            stack[sp + offset::return_address] = pc;
-            stack[sp + offset::enclosing_frame] = bp;
-            stack[sp + offset::declaration_frame] = resolve();
-            bp = sp;
-            pc = ins.address;
+            top_frame = new stack_frame{ program_counter, top_frame, top_frame->resolve(ins.level) };
+            program_counter = ins.address;
             break;
         case opcode::INT:
-            sp += ins.address;
+            top_frame->allocate(ins.address - 3);
             break;
         case opcode::JMP:
-            pc = ins.address;
+            program_counter = ins.address;
             break;
         case opcode::JPC:
-            if (!stack[sp--]) pc = ins.address;
+            if (!top_frame->pop()) {
+                program_counter = ins.address;
+            }
             break;
         case opcode::OPR:
             if (ins.address == *opt::ODD) {
-                int result = stack[sp--] % 2;
-                stack[++sp] = result;
+                int result = top_frame->pop() % 2;
+                top_frame->push(result);
             } else if (ins.address == *opt::READ) {
                 int tmp;
                 std::cin >> tmp;
-                stack[++sp] = tmp;
+                top_frame->push(tmp);
             } else if (ins.address == *opt::WRITE) {
-                std::cout << stack[sp--] << '\n';
+                std::cout << top_frame->pop() << '\n';
             } else if (ins.address == *opt::RET) {
-                // restore context
-                pc = stack[bp];
-                sp = bp;
-                bp = stack[bp + 1];
+                top_frame->leave(program_counter, top_frame);
             } else {
-                int rhs = stack[sp--], lhs = stack[sp--];
-                auto op = bifunctors.find(opt(ins.address))->second;
-                stack[++sp] = op(lhs, rhs);
+                int rhs = top_frame->pop(), lhs = top_frame->pop();
+                auto f = opt2functor.find(opt(ins.address))->second;
+                top_frame->push(f(lhs, rhs));
             }
             break;
         }
     }
-    delete [] stack;
 }
