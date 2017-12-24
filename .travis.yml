@@ -8,6 +8,16 @@ compiler:
 os:
   - linux
 
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-7
+
+install:
+  - CC=gcc-7
+
 script:
   - cmake . -G "Unix Makefiles"
   - make
