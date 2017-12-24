@@ -55,7 +55,7 @@ options parse_args(int argc, const char *argv[]) {
 [[noreturn]] void print_tokens(pl0::lexer &lex) {
     while (true) {
         auto token = lex.peek();
-        std::cout << lex.current_location().to_string() << '\t' << *token << '\t' << lex.get_literal() << '\n';
+        std::cout << lex.loc().to_string() << '\t' << *token << '\t' << lex.get_literal() << '\n';
         if (token == pl0::token::EOS)
             break;
         lex.advance();
@@ -83,7 +83,7 @@ int main(int argc, const char* argv[]) {
     try {
         program = parser.program();
     } catch (pl0::general_error &error) {
-        pl0::location loc = lex.current_location();
+        pl0::location loc = lex.loc();
         std::cout << "Error(" << loc.to_string() << "): " << error.what() << '\n';
         return EXIT_FAILURE;
     }

@@ -58,15 +58,18 @@ inline std::string concat(Args ... args) {
 
 #endif
 
-class location {
-    int line_;
-    int column_;
-public:
-    location(int line, int column) : line_(line), column_(column) { }
+struct location {
+    int line = 1;
+    int column = 1;
 
     std::string to_string() const {
-        return std::to_string(line_) + ':' + std::to_string(column_);
+        return std::to_string(line) + ':' + std::to_string(column);
     }
+};
+
+struct range {
+    location start;
+    location end;
 };
 
 class basic_error {

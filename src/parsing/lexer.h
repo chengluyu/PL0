@@ -12,14 +12,13 @@ class lexer {
     std::istream &input_stream_;
     std::string literal_buffer_;
     token peek_;
-    int line_;
-    int column_;
+    location loc_;
 
     inline int get();
     inline token select(char cond, token conseq, token altern);
 public:
-    lexer(std::istream &input_stream)
-        : input_stream_(input_stream), line_(1), column_(1) { advance(); }
+    explicit lexer(std::istream &input_stream)
+        : input_stream_(input_stream), peek_(token::UNUSED) { advance(); }
 
     void advance();
 
@@ -31,13 +30,13 @@ public:
         return peek_ == tk;
     }
 
-    token next() {
+    inline token next() {
         token save = peek_;
         advance();
         return save;
     }
 
-    bool match(token tk) {
+    inline bool match(token tk) {
         if (peek_ == tk) {
             next();
             return true;
@@ -49,8 +48,8 @@ public:
         return literal_buffer_;
     }
 
-    inline location current_location() {
-        return location { line_, column_ };
+    inline location loc() {
+        return loc_;
     }
 };
 

@@ -13,7 +13,7 @@ inline bool is_identifier_part(int ch) {
 }
 
 int lexer::get() {
-    column_++;
+    loc_.column++;
     return input_stream_.get();;
 }
 
@@ -34,8 +34,8 @@ void lexer::advance() {
     // ignore whitespaces
     while (isspace(input_stream_.peek())) {
         if (get() == '\n') {
-            line_++;
-            column_ = 1;
+            loc_.line++;
+            loc_.column = 1;
         }
     }
     // check if input stream has ended
@@ -81,5 +81,6 @@ void lexer::advance() {
     default:  peek_ = token::ILLEGAL; break;
     }
 }
+
 
 }
